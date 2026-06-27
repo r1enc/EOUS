@@ -48,11 +48,11 @@ Upon completion, the project should provide:
 
 # Tasks
 
-| Task ID  | Title                       | Status  |
-| -------- | --------------------------- | ------- |
-| TASK-001 | Initialize Project          | Planned |
-| TASK-002 | Verify Foundation           | Planned |
-| TASK-003 | Finalize Project Foundation | Planned |
+| Task ID  | Title                       | Status    |
+| -------- | --------------------------- | ----------|
+| TASK-001 | Initialize Project          | Completed |
+| TASK-002 | Verify Foundation           | Planned   |
+| TASK-003 | Finalize Project Foundation | Planned   |
 
 ---
 
