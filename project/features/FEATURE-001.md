@@ -51,9 +51,10 @@ Upon completion, the project should provide:
 | Task ID  | Title                       | Status    |
 | -------- | --------------------------- | ----------|
 | TASK-001 | Initialize Project          | Completed |
-| TASK-002 | Verify Foundation           | Planned   |
-| TASK-003 | Finalize Project Foundation | Planned   |
-
+| TASK-002 | Configure Desktop Foundation| Planned   |
+| TASK-003 | Review Repository Foundation| Planned   |
+| TASK-004 | Establish Project Standards | Planned   |
+| TASK-005 | Finalize Project Foundation | Planned   |
 ---
 
 # Dependencies

@@ -1,4 +1,5 @@
 # Project Bootstrap
+
 Version: 1.0
 Status: Frozen
 Owner: EOUS
@@ -6,40 +7,57 @@ Owner: EOUS
 ---
 
 # Purpose
-This document defines the initial setup required before feature development begins.
+
+This document defines the minimum project setup required before feature development begins.
 
 ---
 
 # Bootstrap Objectives
+
+* Initialize Git repository.
+* Initialize pnpm workspace.
 * Initialize Tauri v2.
 * Configure React 19.
 * Configure TypeScript.
 * Configure Vite.
-* Configure pnpm.
-* Install Tailwind CSS.
-* Install shadcn/ui.
-* Configure ESLint.
-* Configure Git Hooks.
-* Configure Prettier.
-* Configure Vitest.
-* Configure Playwright.
-* Configure Drizzle ORM.
-* Configure SQLite.
+* Establish the initial repository structure.
+* Verify development build.
+* Verify production build.
+* Verify Tauri build.
 
 ---
 
 # Expected Outcome
+
 After bootstrap, the project should provide:
-* Successful build.
-* Development environment.
-* Production build.
-* Linting.
-* Formatting.
-* Testing.
-* Database migration.
-* Hot reload.
+
+* Functional Tauri application.
+* Functional React application.
+* TypeScript configured.
+* Vite configured.
+* Successful development build.
+* Successful production build.
+* Verified project foundation.
+
+---
+
+# Out of Scope
+
+Bootstrap does not include:
+
+* Tailwind CSS.
+* shadcn/ui.
+* ESLint.
+* Prettier.
+* Git Hooks.
+* Vitest.
+* Playwright.
+* Database setup.
+* ORM configuration.
+* Application features.
 
 ---
 
 # Goal
-Provide a stable development foundation before implementing product features.
+
+Provide a stable and verified project foundation before implementing additional tooling and application features.

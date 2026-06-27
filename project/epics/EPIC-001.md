@@ -68,7 +68,7 @@ This Epic depends on:
 ---
 
 # Related Documents
-* docs/00_CONSTITUTION.md
+* docs/00_EOUS_CONSTITUTION.md
 * docs/01_PRD/
 * docs/02_ARCHITECTURE/
 * docs/03_SDK/

@@ -1,4 +1,4 @@
-# TASK-002 — Verify Foundation
+# TASK-002 — Configure Desktop Foundation
 Version: 1.0
 Status: Planned
 Owner: EOUS
@@ -11,25 +11,29 @@ FEATURE-001 — Project Initialization
 ---
 
 # Objective
-Verify that the initialized project builds and runs correctly before additional tooling is introduced.
+Configure the desktop application foundation required before implementing application features.
 
 ---
 
 # Scope
 This task includes:
-* Verify development build
-* Verify production build
-* Verify TypeScript compilation
-* Verify Tauri integration
-* Resolve initialization issues if necessary
+* Configure application identifier
+* Configure application metadata
+* Configure application version
+* Configure application icons
+* Configure window defaults
+* Configure application resources
+* Verify Tauri configuration consistency
 
 ---
 
 # Acceptance Criteria
-* Development build succeeds.
-* Production build succeeds.
-* TypeScript reports no errors.
-* Tauri launches successfully.
+* Bundle identifier configured.
+* Application metadata configured.
+* Application version configured.
+* Window configuration finalized.
+* Application icons configured.
+* Tauri configuration validated.
 
 ---
 
@@ -44,13 +48,14 @@ S
 ---
 
 # Related Documents
+* docs/02_ARCHITECTURE/ARCHITECTURE.md
 * planning/03_PROJECT_BOOTSTRAP.md
 * project/features/FEATURE-001.md
 
 ---
 
 # Definition of Done
-* All verification checks pass.
-* Build is considered stable.
+* Desktop configuration completed.
+* Tauri configuration validated.
 * Changes reviewed.
 * Changes committed.
