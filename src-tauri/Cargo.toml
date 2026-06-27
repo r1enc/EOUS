@@ -1,0 +1,16 @@
+[package]
+name = "eous"
+version = "0.1.0"
+description = "EOUS desktop application"
+authors = ["EOUS"]
+edition = "2021"
+
+[lib]
+name = "eous_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
