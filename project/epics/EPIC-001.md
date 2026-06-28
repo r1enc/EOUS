@@ -49,7 +49,7 @@ Upon completion, the project should provide:
 | Feature ID  | Title                  | Status    |
 | ----------- | ---------------------- | ----------|
 | FEATURE-001 | Project Initialization | Completed |
-| FEATURE-002 | Development Tooling    | Planned   |
+| FEATURE-002 | Development Tooling    | Completed |
 | FEATURE-003 | Database Foundation    | Planned   |
 | FEATURE-004 | Testing Foundation     | Planned   |
 
