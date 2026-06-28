@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
+import { fileURLToPath, URL } from "node:url";
 
 const tauriEnv = (globalThis as unknown as {
   process?: { env?: Record<string, string | undefined> };
@@ -9,6 +10,11 @@ const tauriDevHost = tauriEnv.TAURI_DEV_HOST;
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url))
+    }
+  },
   clearScreen: false,
   server: {
     host: tauriDevHost || false,
