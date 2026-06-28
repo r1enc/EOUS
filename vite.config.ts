@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 
 const tauriEnv = (globalThis as unknown as {
@@ -7,7 +8,7 @@ const tauriEnv = (globalThis as unknown as {
 const tauriDevHost = tauriEnv.TAURI_DEV_HOST;
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   clearScreen: false,
   server: {
     host: tauriDevHost || false,
