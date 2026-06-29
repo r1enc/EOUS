@@ -31,5 +31,10 @@
     "shortDescription": "EOUS desktop application",
     "icon": ["icons/icon.ico"],
     "resources": ["../resources/*"]
+  },
+  "plugins": {
+    "sql": {
+      "preload": ["sqlite:eous.db"]
+    }
   }
 }
