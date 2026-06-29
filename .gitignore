@@ -7,3 +7,7 @@ src-tauri/gen/
 src-tauri/.tauri/
 
 *.log
+
+*.db
+*.db-shm
+*.db-wal

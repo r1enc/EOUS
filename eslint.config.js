@@ -48,5 +48,11 @@ export default tseslint.config(
     languageOptions: {
       globals: globals.node
     }
+  },
+  {
+    files: ["scripts/database/**/*.mjs"],
+    languageOptions: {
+      globals: globals.node
+    }
   }
 );

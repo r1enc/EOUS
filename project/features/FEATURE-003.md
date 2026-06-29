@@ -66,7 +66,7 @@ Upon completion, the project should provide:
 | -------- | ---------------------------------- | --------- |
 | TASK-011 | Configure Database Foundation      | Completed |
 | TASK-012 | Establish Core Database Schema     | Completed |
-| TASK-013 | Configure Database Lifecycle       | Planned   |
+| TASK-013 | Configure Database Lifecycle       | Completed |
 | TASK-014 | Finalize Database Foundation       | Planned   |
 
 ---

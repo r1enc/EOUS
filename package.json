@@ -7,6 +7,10 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 1420",
     "build": "tsc --noEmit && vite build",
+    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
+    "db:seed": "node --no-warnings=ExperimentalWarning scripts/database/seed.mjs",
+    "db:validate": "node --no-warnings=ExperimentalWarning scripts/database/validate-lifecycle.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"*.{js,json,css}\" \"src/**/*.{ts,tsx,css}\"",
@@ -30,6 +34,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@libsql/client": "^0.17.4",
     "@tailwindcss/vite": "^4.3.1",
     "@tauri-apps/cli": "^2.0.0",
     "@types/node": "^26.0.1",
