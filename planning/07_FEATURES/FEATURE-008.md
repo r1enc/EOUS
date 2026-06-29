@@ -14,11 +14,23 @@ EPIC-002 — Core Platform
 
 ---
 
+# Purpose
+
+Establish the foundational Built-in Tools that provide the first native capabilities of the EOUS platform through the standardized Tool SDK.
+
+This Feature defines the implementation of Version 1 built-in tools using the previously established Tool SDK contracts while preserving modularity, architectural consistency, and future extensibility.
+
+The Built-in Tools Foundation provides reusable platform capabilities without introducing new architectural components.
+
+---
+
 # Objective
 
-Establish the Built-in Tools Foundation that provides the first native capabilities of the EOUS platform through the standardized Tool SDK.
+Establish the Built-in Tools Foundation that enables the Agent to execute real-world tasks through standardized Tool SDK contracts.
 
-This Feature introduces the foundational built-in tools defined for Version 1, enabling the Agent to execute real-world tasks using reusable platform capabilities while preserving modularity and architectural independence.
+This Feature implements the initial native platform tools defined for Version 1 while remaining independent from provider implementations, runtime infrastructure, and future marketplace capabilities.
+
+No new SDK architecture or execution pipeline is introduced during this Feature.
 
 ---
 
@@ -26,18 +38,21 @@ This Feature introduces the foundational built-in tools defined for Version 1, e
 
 This Feature includes:
 
-* Built-in tool foundation
-* Calculator Tool foundation
-* TXT Reader Tool foundation
-* PDF Reader Tool foundation
-* Web Search Tool foundation
+* Built-in Tools foundation
+* Calculator Tool
+* TXT Reader Tool
+* PDF Reader Tool
+* Web Search Tool
 * Tool metadata
 * Tool registration foundation
 * Tool validation
-Built-in tools are implemented through the established Tool SDK contracts without introducing Tool Registry or Tool Executor implementations.
 
-This Feature does not include:
+Built-in tools are implemented exclusively through the established Tool SDK contracts.
 
+This Feature does **not** include:
+
+* Tool Registry runtime
+* Tool Executor runtime
 * Third-party tools
 * Plugin Marketplace
 * Tool Marketplace
@@ -46,8 +61,9 @@ This Feature does not include:
 * Automation workflows
 * Desktop control
 * Local AI
+* Cloud synchronization
 * Business logic outside tool capabilities
-* User interface changes
+* User interface redesign
 
 ---
 
@@ -55,14 +71,14 @@ This Feature does not include:
 
 Upon completion, the project should provide:
 
-* Built-in tool foundation
-* Calculator Tool foundation
-* TXT Reader Tool foundation
-* PDF Reader Tool foundation
-* Web Search Tool foundation
+* Built-in Tools foundation
+* Calculator Tool
+* TXT Reader Tool
+* PDF Reader Tool
+* Web Search Tool
 * Standard tool metadata
 * Tool registration foundation
-* Tool validation
+* Tool validation foundation
 * Successful development build
 * Successful production build
 
@@ -88,20 +104,36 @@ Depends on:
 Requires:
 
 * Constitution
+* Product Requirement Document (PRD)
 * Architecture
-* SDK
-* Product Requirement Document
+* SDK Specification
+* Architecture Mapping
 * Development Standards
+* Roadmap
+* Decision Log
 
 ---
 
 # Related Documents
 
+Documentation
+
 * docs/00_EOUS_CONSTITUTION.md
+* docs/01_PRD/V1.md
 * docs/02_ARCHITECTURE/ARCHITECTURE.md
-* docs/03_SDK.md
+* docs/03_SDK/SDK.md
+* docs/05_ROADMAP.md
+* docs/06_DECISIONS.md
 * docs/09_DEVELOPMENT_STANDARDS.md
-* V1.md
+
+Planning
+
+* planning/05_ARCHITECTURE_MAPPING.md
+* planning/07_FEATURES/FEATURE-007.md
+
+Project
+
+* project/epics/EPIC-002.md
 
 ---
 
@@ -109,13 +141,13 @@ Requires:
 
 This Feature is considered complete when:
 
-* Built-in tool foundation is established.
-* Calculator Tool is implemented.
-* TXT Reader Tool is implemented.
-* PDF Reader Tool is implemented.
-* Web Search Tool is implemented.
-* Tool registration succeeds.
-* Tool validation succeeds.
+* Built-in Tools foundation is established.
+* Calculator Tool is available.
+* TXT Reader Tool is available.
+* PDF Reader Tool is available.
+* Web Search Tool is available.
+* Tool registration foundation is established.
+* Tool validation foundation is completed.
 * Development build succeeds.
 * Production build succeeds.
 * All Tasks are completed.
@@ -126,18 +158,22 @@ This Feature is considered complete when:
 
 The following items are intentionally excluded:
 
+* Tool Registry runtime
+* Tool Executor runtime
 * Third-party tools
 * Plugin Marketplace
-* Local AI
+* Tool Marketplace
+* Image processing
 * OCR
-* Image tools
 * Automation workflows
 * Desktop control
+* Local AI
 * Cloud synchronization
+* Business logic outside tool capabilities
 * User interface redesign
 
 ---
 
 # Goal
 
-Provide the initial set of built-in platform capabilities required for Version 1 by implementing reusable native tools that integrate through the Tool SDK while maintaining architectural consistency, modularity, and future extensibility.
+Provide the initial set of built-in platform capabilities required for Version 1 by implementing reusable native tools through standardized Tool SDK contracts while preserving modularity, implementation independence, architectural consistency, and future extensibility.

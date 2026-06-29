@@ -14,13 +14,23 @@ EPIC-002 — Core Platform
 
 ---
 
+# Purpose
+
+Establish the foundational Tool SDK that standardizes how the EOUS platform communicates with tools.
+
+This Feature defines the implementation-independent contracts, models, and architectural boundaries that all future platform tools must follow.
+
+The Tool SDK serves as the stable interface between the Agent, Execution Layer, and future Tool implementations while preserving modularity, provider independence, and long-term maintainability.
+
+---
+
 # Objective
 
-Establish the Tool SDK foundation that enables the Agent to interact with tools through a standardized execution contract.
+Establish the Tool SDK foundation that enables the Agent to interact with tools through standardized execution contracts without depending on specific tool implementations.
 
-This Feature introduces the foundational SDK components required to support future tool integration while remaining independent from specific tool implementations.
+This Feature defines the shared SDK architecture, common contracts, execution models, validation models, and versioning strategy required for future platform capabilities.
 
-The objective is to provide a stable SDK contract that allows tools to be added, updated, and maintained without requiring modifications to the Agent or the platform core.
+No runtime behavior or tool implementation is introduced during this Feature.
 
 ---
 
@@ -38,18 +48,21 @@ This Feature includes:
 * SDK versioning model
 * SDK validation foundation
 
-This Feature does not include:
+This Feature does **not** include:
 
 * Tool Registry
-* Tool Validator
-* Tool Executor
 * Tool Discovery
-* Tool Runtime
+* Tool Validator implementation
+* Tool Executor
+* Runtime execution
 * Built-in tools
 * Third-party tools
-* Tool Marketplace
-* Tool execution
+* Plugin Marketplace
+* Provider implementation
 * Agent orchestration
+* Conversation system
+* Memory system
+* Permission system
 * Business logic
 * Application UI
 
@@ -60,13 +73,13 @@ This Feature does not include:
 Upon completion, the project should provide:
 
 * Tool SDK module structure
-* Shared SDK interfaces
-* Tool Manifest model
+* Shared Tool SDK interfaces
 * Tool Interface contract
+* Tool Manifest model
 * Standard execution request model
 * Standard execution response model
 * Standard SDK error model
-* SDK version model
+* SDK versioning model
 * SDK validation foundation
 * Successful development build
 * Successful production build
@@ -75,12 +88,12 @@ Upon completion, the project should provide:
 
 # Tasks
 
-| Task ID | Title | Status |
-|----------|--------------------------------------|----------|
+| Task ID  | Title                         | Status  |
+| -------- | ----------------------------- | ------- |
 | TASK-015 | Establish Tool SDK Foundation | Planned |
-| TASK-016 | Define Tool Contracts | Planned |
-| TASK-017 | Configure SDK Validation | Planned |
-| TASK-018 | Finalize Tool SDK Foundation | Planned |
+| TASK-016 | Define Tool Contracts         | Planned |
+| TASK-017 | Configure SDK Validation      | Planned |
+| TASK-018 | Finalize Tool SDK Foundation  | Planned |
 
 ---
 
@@ -93,19 +106,35 @@ Depends on:
 Requires:
 
 * Constitution
+* Product Requirement Document (PRD)
 * Architecture
 * SDK Specification
+* Architecture Mapping
 * Development Standards
+* Roadmap
+* Decision Log
 
 ---
 
 # Related Documents
 
+Documentation
+
 * docs/00_EOUS_CONSTITUTION.md
+* docs/01_PRD/V1.md
 * docs/02_ARCHITECTURE/ARCHITECTURE.md
 * docs/03_SDK.md
+* docs/05_ROADMAP.md
+* docs/06_DECISIONS.md
 * docs/09_DEVELOPMENT_STANDARDS.md
+
+Planning
+
 * planning/05_ARCHITECTURE_MAPPING.md
+
+Project
+
+* project/epics/EPIC-002.md
 
 ---
 
@@ -113,12 +142,14 @@ Requires:
 
 This Feature is considered complete when:
 
-* Tool SDK foundation is established.
-* SDK module structure is implemented.
+* Tool SDK architecture is established.
+* SDK module structure is specified and implemented.
 * Tool Interface contract is defined.
 * Tool Manifest model is available.
-* Shared execution models are available.
-* SDK versioning model is implemented.
+* Standard execution request model is available.
+* Standard execution response model is available.
+* Standard SDK error model is available.
+* SDK versioning model is defined.
 * SDK validation foundation is established.
 * Development build succeeds.
 * Production build succeeds.
@@ -131,22 +162,23 @@ This Feature is considered complete when:
 The following items are intentionally excluded:
 
 * Tool Registry implementation
+* Tool Discovery implementation
 * Tool Validator implementation
 * Tool Executor implementation
-* Tool Discovery implementation
 * Runtime execution pipeline
 * Built-in tools
-* External tools
+* Third-party tools
 * Plugin Marketplace
-* Agent execution logic
 * Provider implementation
-* Conversation system
-* Memory system
-* Permission system
+* Agent orchestration
+* Conversation implementation
+* Memory implementation
+* Permission implementation
+* Business logic
 * User interface
 
 ---
 
 # Goal
 
-Provide a stable, provider-independent, and implementation-independent Tool SDK foundation that enables future tools to integrate into EOUS through a standardized execution contract while preserving the platform's long-term architectural stability.
+Provide a stable, provider-independent, implementation-independent, and runtime-independent Tool SDK foundation that enables every future platform capability to integrate through standardized execution contracts while preserving the Agent-Oriented Architecture and long-term architectural stability.

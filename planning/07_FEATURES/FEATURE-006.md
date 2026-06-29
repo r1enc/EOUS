@@ -14,11 +14,23 @@ EPIC-002 — Core Platform
 
 ---
 
+# Purpose
+
+Establish the foundational Agent architecture that serves as the central orchestration component of the EOUS platform.
+
+This Feature defines the implementation-independent Agent architecture, shared contracts, execution models, and orchestration interfaces required to coordinate reasoning, planning, provider interaction, and tool execution while preserving modularity and architectural consistency.
+
+The Agent Foundation serves as the orchestration layer between the Presentation Layer and the underlying Execution Layer.
+
+---
+
 # Objective
 
-Establish the Agent Foundation that serves as the central orchestration component of the EOUS platform.
+Establish the Agent Foundation that enables EOUS to understand user intent, generate execution plans, coordinate provider interaction, and delegate execution through standardized architectural interfaces without depending on specific provider implementations or business capabilities.
 
-This Feature introduces the architectural foundation required for the Agent to understand user intent, coordinate reasoning, generate execution plans, interact with AI providers, and delegate execution through the Execution Layer while remaining independent from provider implementations and business capabilities.
+This Feature defines the shared Agent architecture, interfaces, request and response models, lifecycle, validation, and orchestration contracts required for future platform capabilities.
+
+No conversation persistence, provider implementation, or tool execution is introduced during this Feature.
 
 ---
 
@@ -32,23 +44,25 @@ This Feature includes:
 * Agent response model
 * Intent analysis foundation
 * Execution planning foundation
-* Context management foundation
+* Agent context management foundation
 * Tool selection foundation
 * Agent lifecycle
 * Agent validation
 
-This Feature does not include:
+This Feature does **not** include:
 
 * Conversation management
+* Conversation persistence
 * Memory implementation
 * Provider implementations
 * Tool execution
 * Tool Registry
 * Tool Executor
 * Built-in tools
-* Permission implementation
+* Permission system
+* Workspace integration
 * Business logic
-* User interface
+* Application UI
 
 ---
 
@@ -62,10 +76,10 @@ Upon completion, the project should provide:
 * Standard Agent response model
 * Intent analysis foundation
 * Execution planning foundation
-* Context management foundation
+* Agent context management foundation
 * Tool selection foundation
 * Agent lifecycle
-* Agent validation
+* Agent validation foundation
 * Successful development build
 * Successful production build
 
@@ -91,19 +105,38 @@ Depends on:
 Requires:
 
 * Constitution
+* Product Requirement Document (PRD)
 * Architecture
+* SDK Specification
 * AI Context
+* Architecture Mapping
 * Development Standards
+* Roadmap
+* Decision Log
 
 ---
 
 # Related Documents
 
+Documentation
+
 * docs/00_EOUS_CONSTITUTION.md
+* docs/01_PRD/V1.md
 * docs/02_ARCHITECTURE/ARCHITECTURE.md
+* docs/03_SDK/SDK.md
+* docs/05_ROADMAP.md
+* docs/06_DECISIONS.md
 * docs/08_AI_CONTEXT.md
 * docs/09_DEVELOPMENT_STANDARDS.md
+
+Planning
+
 * planning/05_ARCHITECTURE_MAPPING.md
+* planning/07_FEATURES/FEATURE-005.md
+
+Project
+
+* project/epics/EPIC-002.md
 
 ---
 
@@ -113,13 +146,14 @@ This Feature is considered complete when:
 
 * Agent Core foundation is established.
 * Agent interfaces are defined.
-* Agent request and response models are implemented.
-* Intent analysis foundation is available.
-* Execution planning foundation is available.
-* Context management foundation is available.
-* Tool selection foundation is available.
+* Agent request model is available.
+* Agent response model is available.
+* Intent analysis foundation is established.
+* Execution planning foundation is established.
+* Agent context management foundation is established.
+* Tool selection foundation is established.
 * Agent lifecycle is established.
-* Agent validation succeeds.
+* Agent validation foundation is completed.
 * Development build succeeds.
 * Production build succeeds.
 * All Tasks are completed.
@@ -130,6 +164,7 @@ This Feature is considered complete when:
 
 The following items are intentionally excluded:
 
+* Conversation management
 * Conversation persistence
 * Memory persistence
 * Provider implementations
@@ -137,12 +172,14 @@ The following items are intentionally excluded:
 * Tool Executor
 * Tool execution
 * Built-in tools
-* Permission workflows
-* Application UI
+* Permission system
+* Workspace integration
+* Presentation layer
 * Business logic
+* User interface
 
 ---
 
 # Goal
 
-Provide a stable Agent Foundation that becomes the central orchestration layer of EOUS, coordinating reasoning, planning, provider interaction, and execution through standardized architectural interfaces while preserving modularity, provider independence, and long-term maintainability.
+Provide a stable, provider-independent, implementation-independent, and runtime-independent Agent Foundation that becomes the central orchestration layer of EOUS, coordinating reasoning, planning, provider interaction, and execution through standardized architectural interfaces while preserving modularity, architectural consistency, and long-term maintainability.
