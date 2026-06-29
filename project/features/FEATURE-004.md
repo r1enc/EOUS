@@ -71,10 +71,10 @@ Upon completion, the project should provide:
 
 # Tasks
 
-| Task ID  | Title                                   | Status  |
-| -------- | --------------------------------------- | ------- |
+| Task ID  | Title                                   | Status    |
+| -------- | --------------------------------------- | -------   |
 | TASK-015 | Establish Tool SDK Foundation           | Completed |
-| TASK-016 | Define SDK Contracts and Models         | Planned |
+| TASK-016 | Define SDK Contracts and Models         | Completed |
 | TASK-017 | Build SDK Validation and Versioning     | Planned |
 | TASK-018 | Verify and Finalize Tool SDK Foundation | Planned |
 

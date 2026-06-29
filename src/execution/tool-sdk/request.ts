@@ -1,4 +1,8 @@
-export interface SdkRequest<TInput = unknown> {
+import type { ToolInputDefinition } from "./manifest";
+
+export interface SdkRequest<
+  TInput extends ToolInputDefinition = ToolInputDefinition
+> {
   toolId: string;
   input: TInput;
 }

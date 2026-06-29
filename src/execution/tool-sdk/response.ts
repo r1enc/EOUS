@@ -1,7 +1,14 @@
 import type { SdkError } from "./error";
+import type { ToolOutputDefinition } from "./manifest";
 
-export interface SdkResponse<TOutput = unknown> {
-  success: boolean;
-  output?: TOutput;
-  error?: SdkError;
-}
+export type SdkResponse<
+  TOutput extends ToolOutputDefinition = ToolOutputDefinition
+> =
+  | {
+      success: true;
+      output: TOutput;
+    }
+  | {
+      success: false;
+      error: SdkError;
+    };
