@@ -1,8 +1,8 @@
-# TASK-016 — Define Tool Contracts
+# TASK-016 — Define SDK Contracts and Models
 
 Version: 1.0
 
-Status: Frozen
+Status: Planned
 
 Owner: EOUS
 
@@ -16,7 +16,9 @@ FEATURE-004 — Tool SDK Foundation
 
 # Objective
 
-Define the standardized Tool SDK contracts that enable consistent communication between the Agent, Tool SDK, and future tool implementations.
+Define the standardized Tool SDK contracts and shared data models required for all future platform tools.
+
+This task establishes the contracts that every Tool must implement, ensuring consistency, interoperability, and long-term maintainability across the EOUS platform.
 
 ---
 
@@ -24,33 +26,74 @@ Define the standardized Tool SDK contracts that enable consistent communication 
 
 This task includes:
 
-* Define Tool Interface contract
+* Define Tool contract
 * Define Tool Manifest contract
-* Define Tool Request model
-* Define Tool Response model
-* Define Tool Error model
-* Define SDK version model
-* Validate SDK contracts
+* Define execution request contract
+* Define execution response contract
+* Define Tool metadata contract
+* Define SDK error contract
+* Define shared SDK model relationships
+* Verify project builds successfully
+
+This task does **not** include:
+
+* SDK validation
+* SDK versioning
+* Tool Registry
+* Tool Discovery
+* Tool Executor
+* Runtime execution
+* Built-in tools
+* Third-party tools
+* Provider implementation
+* Agent implementation
+
+---
+
+# Expected Deliverables
+
+Upon completion, the project should provide:
+
+* Standard Tool contract
+* Tool Manifest contract
+* Execution request contract
+* Execution response contract
+* Tool metadata contract
+* SDK error contract
+* Shared SDK model definitions
 
 ---
 
 # Acceptance Criteria
 
-* Tool Interface contract defined.
-* Tool Manifest contract defined.
-* Tool Request model defined.
-* Tool Response model defined.
-* Tool Error model defined.
-* SDK version model established.
+* Tool contract is defined.
+* Tool Manifest contract is defined.
+* Execution request contract is defined.
+* Execution response contract is defined.
+* Tool metadata contract is defined.
+* SDK error contract is defined.
+* SDK models are internally consistent.
+* Project compiles successfully.
 * Development build succeeds.
 * Production build succeeds.
-* SDK contracts validated.
 
 ---
 
 # Dependencies
 
-TASK-015 — Establish Tool SDK Foundation
+Depends on:
+
+* TASK-015 — Establish Tool SDK Foundation
+
+Requires:
+
+* Constitution
+* Product Requirement Document (PRD)
+* Architecture
+* SDK Specification
+* Development Standards
+* planning/FEATURE-004.md
+* project/FEATURE-004.md
 
 ---
 
@@ -62,17 +105,30 @@ M
 
 # Related Documents
 
-* planning/07_FEATURES/FEATURE-004.md
+Documentation
+
+* docs/00_EOUS_CONSTITUTION.md
+* docs/01_PRD/V1.md
 * docs/02_ARCHITECTURE/ARCHITECTURE.md
-* docs/03_SDK.md
+* docs/03_SDK/SDK.md
+* docs/09_DEVELOPMENT_STANDARDS.md
+
+Planning
+
+* planning/07_FEATURES/FEATURE-004.md
+
+Project
+
 * project/features/FEATURE-004.md
 
 ---
 
 # Definition of Done
 
-* Tool SDK contracts follow the project architecture.
-* Shared SDK models are standardized.
-* SDK contracts validated.
+* Tool SDK contracts are defined.
+* Shared SDK models are completed.
+* SDK contracts are internally consistent.
+* Project builds successfully.
+* Validation completed.
 * Changes reviewed.
-* Changes committed.
+* Ready for commit approval.

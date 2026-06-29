@@ -10,9 +10,9 @@ Owner: EOUS
 
 # Objective
 
-Establish the core platform architecture required for EOUS to operate as a modular, extensible, and production-ready AI desktop assistant.
+Implement the Core Platform architecture that enables EOUS to operate as a modular, extensible, and production-ready desktop AI assistant.
 
-This Epic focuses on implementing the architectural foundations that enable Agent orchestration, provider abstraction, standardized tool integration, secure execution, and platform integration before expanding into higher-level product capabilities.
+This Epic delivers the architectural foundations defined in the planning phase, including the Tool SDK, Provider Management, Agent, Conversation, Built-in Tools, Permission System, and their integration into a unified Version 1 platform.
 
 ---
 
@@ -20,16 +20,15 @@ This Epic focuses on implementing the architectural foundations that enable Agen
 
 This Epic includes:
 
-* Core platform architecture
-* Tool SDK foundation
-* Provider abstraction
-* Agent orchestration
-* Conversation architecture
-* Built-in tool architecture
-* Permission management
-* Platform integration
+* Tool SDK Foundation
+* Provider Management Foundation
+* Agent Foundation
+* Conversation Foundation
+* Built-in Tools Foundation
+* Permission System Foundation
+* Workspace Integration
 
-This Epic does not include:
+This Epic does **not** include:
 
 * Productivity features
 * Image Studio
@@ -73,26 +72,40 @@ Upon completion, the project should provide:
 
 # Dependencies
 
-This Epic depends on:
+Depends on:
+
+* FEATURE-003 — Database Foundation
+
+Requires:
 
 * Constitution
-* PRD
+* Product Requirement Document (PRD)
 * Architecture
-* SDK
+* SDK Specification
 * UI/UX
-* AI Development Layer
-* Planning Documents
+* Architecture Mapping
+* Development Standards
+* Roadmap
+* Decision Log
 
 ---
 
 # Related Documents
 
+Documentation
+
 * docs/00_EOUS_CONSTITUTION.md
-* docs/01_PRD/
-* docs/02_ARCHITECTURE/
-* docs/03_SDK/
-* docs/04_UI_UX/
-* planning/05_ARCHITECTURE_MAPPING.md
+* docs/01_PRD/V1.md
+* docs/02_ARCHITECTURE/ARCHITECTURE.md
+* docs/03_SDK/SDK.md
+* docs/04_UI_UX/UI_UX.md
+* docs/05_ROADMAP.md
+* docs/06_DECISIONS.md
+* docs/09_DEVELOPMENT_STANDARDS.md
+
+Planning
+
+* planning/06_EPICS.md
 * planning/07_FEATURES/FEATURE-004.md
 * planning/07_FEATURES/FEATURE-005.md
 * planning/07_FEATURES/FEATURE-006.md
@@ -113,8 +126,10 @@ This Epic is considered complete when:
 * Conversation Foundation is operational.
 * Built-in Tools Foundation is operational.
 * Permission System Foundation is operational.
+* Workspace Integration is completed.
 * Core Platform integration is validated.
-* Development and production builds succeed.
+* Development build succeeds.
+* Production build succeeds.
 * All Features are completed.
 
 ---
@@ -136,4 +151,4 @@ The following items are intentionally excluded:
 
 # Goal
 
-Provide a stable, modular, and extensible Core Platform that serves as the architectural foundation for all future EOUS capabilities while preserving the Agent-Oriented Architecture and long-term maintainability of the platform.
+Deliver the complete Core Platform required for Version 1 by implementing every planned architectural foundation while preserving the Agent-Oriented Architecture, modularity, maintainability, and long-term extensibility of the EOUS platform.
