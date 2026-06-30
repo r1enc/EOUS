@@ -77,8 +77,8 @@ Upon completion, the project should provide:
 | -------- | ---------------------------- | --------- |
 | TASK-023 | Establish Agent Foundation   | Completed |
 | TASK-024 | Define Agent Contracts       | Completed |
-| TASK-025 | Configure Agent Validation   | Planned   |
-| TASK-026 | Finalize Agent Foundation    | Planned   |
+| TASK-025 | Configure Agent Validation   | Completed |
+| TASK-026 | Finalize Agent Foundation    | Planned |
 
 ---
 
