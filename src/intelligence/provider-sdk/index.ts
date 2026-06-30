@@ -1,5 +1,10 @@
 export type { ProviderError, ProviderErrorCategory } from "./error";
-export type { Provider } from "./provider";
+export type {
+  Provider,
+  ProviderAuth,
+  ProviderCapabilities,
+  ProviderConfig
+} from "./provider";
 export type {
   ProviderMessage,
   ProviderMessageRole,

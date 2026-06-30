@@ -72,7 +72,7 @@ Upon completion, the project should provide:
 | Task ID  | Title                                              | Status    |
 | -------- | -------------------------------------------------- | --------- |
 | TASK-019 | Establish Provider Management Foundation           | Completed |
-| TASK-020 | Define Provider Contracts and Models               | Planned   |
+| TASK-020 | Define Provider Contracts and Models               | Completed |
 | TASK-021 | Build Provider Validation and Registration         | Planned   |
 | TASK-022 | Verify and Finalize Provider Management Foundation | Planned   |
 
