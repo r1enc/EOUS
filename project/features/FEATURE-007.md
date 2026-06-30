@@ -83,7 +83,7 @@ Upon completion, the project should provide:
 | Task ID | Title | Status |
 |----------|------------------------------------|---------|
 | TASK-027 | Establish Conversation Foundation | Completed |
-| TASK-028 | Define Conversation Models | Planned |
+| TASK-028 | Define Conversation Models | Completed |
 | TASK-029 | Configure Conversation Validation | Planned |
 | TASK-030 | Finalize Conversation Foundation | Planned |
 
