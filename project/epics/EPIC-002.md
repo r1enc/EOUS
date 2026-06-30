@@ -58,15 +58,15 @@ Upon completion, the project should provide:
 
 # Features
 
-| Feature ID  | Title                          | Status  |
-| ----------- | ------------------------------ | ------- |
-| FEATURE-004 | Tool SDK Foundation            | Planned |
-| FEATURE-005 | Provider Management Foundation | Planned |
-| FEATURE-006 | Agent Foundation               | Planned |
-| FEATURE-007 | Conversation Foundation        | Planned |
-| FEATURE-008 | Built-in Tools Foundation      | Planned |
-| FEATURE-009 | Permission System Foundation   | Planned |
-| FEATURE-010 | Workspace Integration          | Planned |
+| Feature ID  | Title                          | Status    |
+| ----------- | ------------------------------ | --------- |
+| FEATURE-004 | Tool SDK Foundation            | Completed |
+| FEATURE-005 | Provider Management Foundation | Completed |
+| FEATURE-006 | Agent Foundation               | Completed |
+| FEATURE-007 | Conversation Foundation        | Planned   |
+| FEATURE-008 | Built-in Tools Foundation      | Planned   |
+| FEATURE-009 | Permission System Foundation   | Planned   |
+| FEATURE-010 | Workspace Integration          | Planned   |
 
 ---
 
