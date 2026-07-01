@@ -89,7 +89,7 @@ Upon completion, the project should provide:
 | Task ID | Title | Status |
 |----------|-------|--------|
 | TASK-031 | Establish Built-in Tools Foundation | Completed |
-| TASK-032 | Implement Core Built-in Tools | Planned |
+| TASK-032 | Implement Core Built-in Tools | Completed |
 | TASK-033 | Configure Tool Registration | Planned |
 | TASK-034 | Finalize Built-in Tools Foundation | Planned |
 
