@@ -13,3 +13,13 @@ export type {
   ConversationLifecycleState,
   ConversationLifecycleEvent
 } from "./lifecycle";
+export {
+  ConversationValidationError,
+  validateConversationRequest,
+  validateConversationContext,
+  validateConversationMessage,
+  validateConversationHistory,
+  validateConversationSession,
+  validateConversationResponse,
+  validateConversationLifecycleEvent
+} from "./validation";
