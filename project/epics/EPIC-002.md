@@ -64,7 +64,7 @@ Upon completion, the project should provide:
 | FEATURE-005 | Provider Management Foundation | Completed |
 | FEATURE-006 | Agent Foundation               | Completed |
 | FEATURE-007 | Conversation Foundation        | Completed |
-| FEATURE-008 | Built-in Tools Foundation      | Planned   |
+| FEATURE-008 | Built-in Tools Foundation      | Completed |
 | FEATURE-009 | Permission System Foundation   | Planned   |
 | FEATURE-010 | Workspace Integration          | Planned   |
 

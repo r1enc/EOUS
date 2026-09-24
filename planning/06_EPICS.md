@@ -16,7 +16,7 @@ Each Epic represents a significant product capability and consists of multiple F
 | Epic ID  | Epic                   | Related Roadmap Phase |
 | -------- | ---------------------- | --------------------- |
 | EPIC-001 | Project Foundation     | Phase 2               |
-| EPIC-002 | AI Workspace           | Phase 2               |
+| EPIC-002 | Core Platform          | Phase 2               |
 | EPIC-003 | Conversation System    | Phase 2               |
 | EPIC-004 | Agent Core             | Phase 3               |
 | EPIC-005 | Context & Memory       | Phase 3               |

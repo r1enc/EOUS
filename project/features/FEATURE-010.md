@@ -2,7 +2,7 @@
 
 Version: 1.0
 
-Status: Frozen
+Status: Planned
 
 Owner: EOUS
 
@@ -127,6 +127,7 @@ Planning
 
 * planning/05_ARCHITECTURE_MAPPING.md
 * planning/07_FEATURES/FEATURE-009.md
+* planning/07_FEATURES/FEATURE-010.md
 
 Project
 

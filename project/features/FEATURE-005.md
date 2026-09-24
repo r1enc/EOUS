@@ -8,7 +8,7 @@ Owner: EOUS
 
 # Epic
 
-EPIC-002 — Core Platform Foundation
+EPIC-002 — Core Platform
 
 ---
 

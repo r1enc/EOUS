@@ -1,5 +1,7 @@
 # TASK-031 — Establish Built-in Tools Foundation
 
+Status: Completed
+
 This document outlines the technical implementation plan for TASK-031, focusing on establishing the Built-in Tools Foundation under `src/tools/builtin/`.
 
 ---

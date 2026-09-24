@@ -1,5 +1,7 @@
 # TASK-032 — Implement Core Built-in Tools
 
+Status: Completed
+
 This document outlines the technical implementation plan for TASK-032, focusing on implementing the Version 1 native Built-in Tools using the standardized Tool SDK established in FEATURE-004.
 
 ---

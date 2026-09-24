@@ -81,12 +81,14 @@ Upon completion, the project should provide:
 
 # Tasks
 
-| Task ID | Title | Status |
-|---------|-------|--------|
-| TASK-035 | Establish Permission Foundation | Completed |
-| TASK-036 | Define Permission Contracts | Completed |
-| TASK-037 | Configure Permission Validation | Planned |
-| TASK-038 | Finalize Permission Foundation | Planned |
+| Task ID  | Title                                  | Status    |
+| -------- | -------------------------------------- | --------- |
+| TASK-035 | Establish Permission Foundation        | Completed |
+| TASK-036 | Define Permission Contracts            | Completed |
+| TASK-037 | Define Permission Policies             | Planned   |
+| TASK-038 | Define Sensitive Action Classification | Planned   |
+| TASK-039 | Configure Permission Validation        | Planned   |
+| TASK-040 | Finalize Permission Foundation         | Planned   |
 
 ---
 
