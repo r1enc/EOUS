@@ -14,3 +14,13 @@ export type {
   SensitiveActionSeverity,
   SensitiveActionMetadata
 } from "./sensitive-action";
+export {
+  PermissionValidationError,
+  validatePermissionRequest,
+  validatePermissionResponse,
+  validatePermissionContext,
+  validatePermissionLifecycle,
+  validatePermissionDecision,
+  validatePermissionPolicy,
+  validateSensitiveAction
+} from "./validation";
