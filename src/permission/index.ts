@@ -5,3 +5,6 @@ export type { PermissionResponse } from "./response";
 export type { PermissionContext } from "./context";
 export type { PermissionLifecycle } from "./lifecycle";
 export type { PermissionDecision } from "./decision";
+export type { PermissionPolicy, PermissionPolicyType } from "./policy";
+export type { PermissionRequirement } from "./requirement";
+export type { PermissionDecisionPolicy } from "./decision-policy";
