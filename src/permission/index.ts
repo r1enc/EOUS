@@ -8,3 +8,9 @@ export type { PermissionDecision } from "./decision";
 export type { PermissionPolicy, PermissionPolicyType } from "./policy";
 export type { PermissionRequirement } from "./requirement";
 export type { PermissionDecisionPolicy } from "./decision-policy";
+export type {
+  SensitiveAction,
+  SensitiveActionCategory,
+  SensitiveActionSeverity,
+  SensitiveActionMetadata
+} from "./sensitive-action";
