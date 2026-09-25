@@ -2,7 +2,7 @@
 
 Version: 1.0
 
-Status: Planned
+Status: Completed
 
 Owner: EOUS
 
@@ -150,3 +150,17 @@ The integrated platform must preserve:
 * Project validation completed.
 * Changes reviewed.
 * Changes committed.
+
+---
+
+# Implementation and Validation
+
+* `src/workspace` exposes `createWorkspace`: Presentation submits the existing ConversationRequest through `execute`, which delegates to Conversation and Agent.
+* Composition selects a conforming Provider from ProviderRegistry. The injected AgentPlanner returns the existing AgentExecutionPlan; each step action identifies a registered tool. No provider-specific protocol or production test provider is included.
+* Agent validates planned inputs, awaits the Permission Manager, delegates to Tool SDK, and uses Provider for the final response. Conversation context and permission records remain session-scoped.
+* Manifest permission requirements become approval-required Permission policies. The injected `approvePermission` handler receives PermissionRequest and returns a matching PermissionResponse. Missing, failed, malformed, or denied approval prevents execution. `getPermissionHistory` exposes copies of PermissionLifecycle records, including decisions recorded before tool execution.
+* SDK registration validates manifests and compatibility. The Executor validates requests and consumes an approval bound to the exact execution before invoking permission-required tools. The Execution Layer receives an injected approval validator and does not import orchestration components.
+* All four built-in manifests use `1.0.0` for SDK and tool versions as required by the existing SDK validator. Existing tool capability behavior is preserved.
+* Focused validation: `node --test tests/core-platform-integration.test.mjs` (13 tests passed), TypeScript, lint, formatting, development startup/module responses (HTTP 200), and production build passed.
+* Tauri release compilation produced `src-tauri/target/release/eous.exe`. MSI packaging encountered the existing WiX `light.exe` failure, separate from this integration.
+* Completion review: all six foundations are connected through the approved runtime boundaries. No bundled external provider, full workspace UI, persistent permission history, or database redesign is required for TASK-041. TASK-042 through TASK-044 remain Planned.

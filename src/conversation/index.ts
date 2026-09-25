@@ -1,4 +1,5 @@
 export type { Conversation } from "./conversation";
+export { DefaultConversation } from "./runtime";
 export type { ConversationError, ConversationErrorCategory } from "./error";
 export type { ConversationRequest } from "./request";
 export type { ConversationResponse } from "./response";

@@ -1,4 +1,6 @@
 export type { Agent } from "./agent";
+export { DefaultAgent } from "./runtime";
+export type { AgentPlanner } from "./runtime";
 export type { AgentError, AgentErrorCategory } from "./error";
 export type { AgentRequest } from "./request";
 export type { AgentResponse } from "./response";

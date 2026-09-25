@@ -1,4 +1,10 @@
 export type { Permission } from "./permission";
+export { DefaultPermissionManager, PermissionRuntimeError } from "./runtime";
+export type {
+  PermissionManager,
+  PermissionExecution,
+  PermissionApprovalHandler
+} from "./runtime";
 export type { PermissionErrorCategory, PermissionError } from "./error";
 export type { PermissionRequest } from "./request";
 export type { PermissionResponse } from "./response";
