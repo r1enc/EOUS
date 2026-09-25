@@ -2,7 +2,7 @@
 
 Version: 1.0
 
-Status: Planned
+Status: Completed
 
 Owner: EOUS
 
@@ -153,3 +153,12 @@ The review must preserve:
 * Blocking quality issues resolved or documented.
 * Changes reviewed.
 * Changes committed.
+
+---
+
+# Implementation and Validation
+
+* Reviewed Core Platform layering, dependencies, public APIs, runtime state ownership, error contracts, permission-first execution, and scope. No additional blocking quality defect was found.
+* Confirmed that mutation of the public shared built-in PDF manifest could remove approval requirements before Workspace composition. A Capability-owned factory now supplies fresh built-in instances to each Workspace while preserving the existing public collection and SDK registration path.
+* Added an isolated regression test for shared tool, nested manifest, and array mutation. Permission remains required, no PDF execution occurs before approval, and the permission request is recorded. All 19 focused Core Platform tests pass.
+* Rechecked Registry manifest isolation, Executor malformed-response normalization, Provider abstraction, Agent-oriented flow, and import direction. TypeScript, lint, formatting, development startup, production build, and the Tauri release executable build pass. The full Tauri command still fails only at the known WiX `light.exe` MSI packaging step after building `eous.exe`.

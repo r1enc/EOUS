@@ -20,9 +20,8 @@ const {
   ToolExecutor,
   validateCompatibility
 } = await vite.ssrLoadModule("/src/execution/tool-sdk/index.ts");
-const { BUILTIN_TOOLS } = await vite.ssrLoadModule(
-  "/src/tools/builtin/index.ts"
-);
+const { BUILTIN_TOOLS, PdfReaderTool, createBuiltInTools } =
+  await vite.ssrLoadModule("/src/tools/builtin/index.ts");
 const { DefaultPermissionManager } = await vite.ssrLoadModule(
   "/src/permission/index.ts"
 );
@@ -619,4 +618,65 @@ test("malformed tool responses become isolated standardized SDK failures", async
   });
   assert.equal(next.success, true);
   assert.equal(next.output.result, 6);
+});
+
+test("Workspace built-ins are isolated from mutations of the public shared collection", async () => {
+  const originalTools = [...BUILTIN_TOOLS];
+  const sharedPdf = BUILTIN_TOOLS.find(
+    (tool) => tool.manifest.id === "pdf-reader"
+  );
+  const originalManifest = sharedPdf.manifest;
+  const originalExecute = PdfReaderTool.prototype.execute;
+  let pdfExecutions = 0;
+  PdfReaderTool.prototype.execute = async function (request) {
+    pdfExecutions++;
+    return originalExecute.call(this, request);
+  };
+
+  try {
+    sharedPdf.manifest = JSON.parse(JSON.stringify(originalManifest));
+    sharedPdf.manifest.requiredPermissions.length = 0;
+
+    const calls = [];
+    const workspace = makeWorkspace(
+      makePlanner("pdf-reader", { filePath: "document.pdf" }),
+      calls
+    );
+    const blocked = await workspace.execute({
+      id: "mutated-shared-pdf",
+      prompt: "Read PDF"
+    });
+    assert.equal(blocked.status, "failure");
+    assert.equal(blocked.error.code, "PERMISSION_REQUIRED");
+    assert.equal(pdfExecutions, 0);
+    assert.equal(calls.length, 1);
+    assert.equal(workspace.getHistory().length, 0);
+    assert.equal(workspace.getPermissionHistory().length, 1);
+    assert.equal(workspace.getPermissionHistory()[0].response, undefined);
+
+    sharedPdf.manifest.input.properties.filePath.type = "number";
+    sharedPdf.manifest.output.properties.content.type = "number";
+    const freshPdf = createBuiltInTools().find(
+      (tool) => tool.manifest.id === "pdf-reader"
+    );
+    assert.deepEqual(freshPdf.manifest.requiredPermissions, ["read_file"]);
+    assert.equal(freshPdf.manifest.input.properties.filePath.type, "string");
+    assert.equal(freshPdf.manifest.output.properties.content.type, "string");
+
+    BUILTIN_TOOLS.splice(0, BUILTIN_TOOLS.length);
+    const secondWorkspace = makeWorkspace(
+      makePlanner("pdf-reader", { filePath: "document.pdf" }),
+      []
+    );
+    const secondBlocked = await secondWorkspace.execute({
+      id: "mutated-shared-array",
+      prompt: "Read PDF"
+    });
+    assert.equal(secondBlocked.error.code, "PERMISSION_REQUIRED");
+    assert.equal(pdfExecutions, 0);
+  } finally {
+    sharedPdf.manifest = originalManifest;
+    BUILTIN_TOOLS.splice(0, BUILTIN_TOOLS.length, ...originalTools);
+    PdfReaderTool.prototype.execute = originalExecute;
+  }
 });

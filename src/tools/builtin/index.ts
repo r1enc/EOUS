@@ -30,12 +30,16 @@ export type {
   WebSearchResultItem
 } from "./web-search/web-search";
 
-export const BUILTIN_TOOLS: BuiltInTool[] = [
-  new CalculatorTool(),
-  new TxtReaderTool(),
-  new PdfReaderTool(),
-  new WebSearchTool()
-];
+export function createBuiltInTools(): BuiltInTool[] {
+  return [
+    new CalculatorTool(),
+    new TxtReaderTool(),
+    new PdfReaderTool(),
+    new WebSearchTool()
+  ];
+}
+
+export const BUILTIN_TOOLS: BuiltInTool[] = createBuiltInTools();
 
 export function validateBuiltInTools(tools: BuiltInTool[]): void {
   const seenIds = new Set<string>();
