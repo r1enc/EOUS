@@ -54,7 +54,18 @@ export class ToolExecutor {
         };
       }
 
-      return await tool.execute(structuredClone(request));
+      const response: unknown = await tool.execute(structuredClone(request));
+      if (!isSdkResponse(response)) {
+        return {
+          success: false,
+          error: {
+            code: "INVALID_TOOL_RESPONSE",
+            message: `Tool '${request.toolId}' returned an invalid SDK response`,
+            category: "execution"
+          }
+        };
+      }
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -67,4 +78,32 @@ export class ToolExecutor {
       };
     }
   }
+}
+
+function isSdkResponse(value: unknown): value is SdkResponse {
+  if (typeof value !== "object" || value === null) return false;
+  const response = value as Record<string, unknown>;
+  if (response.success === true) {
+    return (
+      typeof response.output === "object" &&
+      response.output !== null &&
+      !Array.isArray(response.output)
+    );
+  }
+  if (response.success !== false) return false;
+  const error = response.error;
+  if (typeof error !== "object" || error === null) return false;
+  const sdkError = error as Record<string, unknown>;
+  return (
+    typeof sdkError.code === "string" &&
+    sdkError.code.trim() !== "" &&
+    typeof sdkError.message === "string" &&
+    [
+      "validation",
+      "permission",
+      "compatibility",
+      "execution",
+      "internal"
+    ].includes(sdkError.category as string)
+  );
 }

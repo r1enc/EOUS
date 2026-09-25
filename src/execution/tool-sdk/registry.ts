@@ -29,7 +29,13 @@ export class DefaultToolRegistry implements ToolRegistry {
   }
 
   get(toolId: string): SdkTool | undefined {
-    return this.tools.get(toolId);
+    const tool = this.tools.get(toolId);
+    return (
+      tool && {
+        manifest: structuredClone(tool.manifest),
+        execute: (request) => tool.execute(request)
+      }
+    );
   }
 
   listManifests(): ToolManifest[] {

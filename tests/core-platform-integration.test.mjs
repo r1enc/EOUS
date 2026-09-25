@@ -14,8 +14,12 @@ const { createWorkspace } = await vite.ssrLoadModule(
 const { DefaultProviderRegistry } = await vite.ssrLoadModule(
   "/src/intelligence/provider-sdk/index.ts"
 );
-const { DefaultToolSdkRuntime, validateCompatibility } =
-  await vite.ssrLoadModule("/src/execution/tool-sdk/index.ts");
+const {
+  DefaultToolRegistry,
+  DefaultToolSdkRuntime,
+  ToolExecutor,
+  validateCompatibility
+} = await vite.ssrLoadModule("/src/execution/tool-sdk/index.ts");
 const { BUILTIN_TOOLS } = await vite.ssrLoadModule(
   "/src/tools/builtin/index.ts"
 );
@@ -420,4 +424,199 @@ test("workspace selects interchangeable Providers exclusively through ProviderRe
       id
     );
   }
+});
+
+test("tool-produced output reaches the Workspace caller through final Provider synthesis", async () => {
+  const calls = [];
+  const registry = new DefaultProviderRegistry();
+  registry.registerProvider({
+    ...makeProvider([]),
+    async generateCompletion(request) {
+      calls.push(request);
+      if (calls.length === 1)
+        return { success: true, role: "assistant", content: "Calculate" };
+      const result = request.messages.at(-1).content.match(/"result":(\d+)/);
+      assert.ok(result, "final synthesis receives the actual SDK tool output");
+      return {
+        success: true,
+        role: "assistant",
+        content: `Calculated ${result[1]}`
+      };
+    }
+  });
+  const workspace = createWorkspace({
+    providerRegistry: registry,
+    providerId: "test-provider",
+    model: "test-model",
+    conversationId: "derived-result",
+    conversationTitle: "Derived result",
+    planner: makePlanner("calculator", { expression: "7*8" })
+  });
+  const response = await workspace.execute({
+    id: "derived-result-turn",
+    prompt: "Calculate 7*8"
+  });
+  assert.equal(response.status, "success");
+  assert.equal(response.content, "Calculated 56");
+  assert.equal(workspace.getHistory().at(-1).content, "Calculated 56");
+  assert.equal(calls.length, 2);
+});
+
+test("Provider failures at reasoning and final synthesis return through Workspace and allow recovery", async () => {
+  for (const failedCall of [1, 2]) {
+    let call = 0;
+    const registry = new DefaultProviderRegistry();
+    registry.registerProvider({
+      ...makeProvider([]),
+      async generateCompletion() {
+        call++;
+        if (call === failedCall)
+          return {
+            success: false,
+            error: {
+              code: "PROVIDER_UNAVAILABLE",
+              message: "Temporary failure"
+            }
+          };
+        return { success: true, role: "assistant", content: "Recovered" };
+      }
+    });
+    const workspace = createWorkspace({
+      providerRegistry: registry,
+      providerId: "test-provider",
+      model: "test-model",
+      conversationId: `provider-failure-${failedCall}`,
+      conversationTitle: "Provider failure",
+      planner: makePlanner("calculator", { expression: "2+2" })
+    });
+    const failed = await workspace.execute({
+      id: `provider-failed-${failedCall}`,
+      prompt: "Calculate"
+    });
+    assert.equal(failed.status, "failure");
+    assert.equal(failed.error.code, "PROVIDER_UNAVAILABLE");
+    assert.equal(workspace.getHistory().length, 0);
+    assert.equal(call, failedCall);
+    const recovered = await workspace.execute({
+      id: `provider-recovered-${failedCall}`,
+      prompt: "Calculate again"
+    });
+    assert.equal(recovered.status, "success");
+    assert.equal(workspace.getHistory().length, 2);
+  }
+});
+
+test("planner exceptions, invalid plans, and unknown tools fail through Workspace without poisoning later turns", async () => {
+  const invalidPlan = await makePlanner("calculator", {
+    expression: "2+2"
+  }).plan();
+  invalidPlan.steps[0].id = "";
+  const cases = [
+    {
+      planner: {
+        async plan() {
+          throw new Error("planner failed");
+        }
+      },
+      code: "AGENT_EXECUTION_FAILED"
+    },
+    {
+      planner: {
+        async plan() {
+          return invalidPlan;
+        }
+      },
+      code: "invalid_step_id"
+    },
+    { planner: makePlanner("unknown-tool", {}), code: "TOOL_NOT_FOUND" }
+  ];
+  for (const { planner, code } of cases) {
+    let shouldFail = true;
+    const workspace = makeWorkspace(
+      {
+        async plan(...args) {
+          return shouldFail
+            ? planner.plan(...args)
+            : makePlanner("calculator", { expression: "2+2" }).plan(...args);
+        }
+      },
+      []
+    );
+    const failed = await workspace.execute({
+      id: `failed-${code}`,
+      prompt: "Run"
+    });
+    assert.equal(failed.status, "failure");
+    assert.equal(failed.error.code, code);
+    assert.equal(workspace.getHistory().length, 0);
+    shouldFail = false;
+    const recovered = await workspace.execute({
+      id: `recovered-${code}`,
+      prompt: "Run again"
+    });
+    assert.equal(recovered.status, "success");
+    assert.equal(workspace.getHistory().length, 2);
+  }
+});
+
+test("public Registry lookup cannot change metadata governing SDK validation and permission", async () => {
+  const registry = new DefaultToolRegistry();
+  registry.register(
+    BUILTIN_TOOLS.find((tool) => tool.manifest.id === "pdf-reader")
+  );
+  const exposed = registry.get("pdf-reader");
+  exposed.manifest.requiredPermissions.length = 0;
+  exposed.manifest.sdkVersion = "99.0.0";
+  exposed.manifest.input = {};
+
+  const registered = registry.get("pdf-reader").manifest;
+  assert.deepEqual(registered.requiredPermissions, ["read_file"]);
+  assert.equal(registered.sdkVersion, "1.0.0");
+  assert.notDeepEqual(registered.input, {});
+  const executor = new ToolExecutor(registry);
+  const invalid = await executor.execute({ toolId: "pdf-reader", input: {} });
+  assert.equal(invalid.error.category, "validation");
+  const blocked = await executor.execute({
+    toolId: "pdf-reader",
+    input: { filePath: "document.pdf" }
+  });
+  assert.equal(blocked.error.category, "permission");
+});
+
+test("malformed tool responses become isolated standardized SDK failures", async () => {
+  const sdk = new DefaultToolSdkRuntime();
+  sdk.register(BUILTIN_TOOLS.find((tool) => tool.manifest.id === "calculator"));
+  for (const [id, response] of [
+    ["missing-response", undefined],
+    ["missing-output", { success: true }],
+    ["missing-error", { success: false }]
+  ]) {
+    sdk.register({
+      manifest: {
+        id,
+        name: id,
+        description: "Malformed result test",
+        sdkVersion: "1.0.0",
+        toolVersion: "1.0.0",
+        capabilities: [],
+        requiredPermissions: [],
+        input: {},
+        output: {},
+        dependencies: []
+      },
+      async execute() {
+        return response;
+      }
+    });
+    const result = await sdk.execute({ toolId: id, input: {} });
+    assert.equal(result.success, false);
+    assert.equal(result.error.category, "execution");
+    assert.equal(typeof result.error.code, "string");
+  }
+  const next = await sdk.execute({
+    toolId: "calculator",
+    input: { expression: "3+3" }
+  });
+  assert.equal(next.success, true);
+  assert.equal(next.output.result, 6);
 });

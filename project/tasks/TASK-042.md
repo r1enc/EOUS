@@ -2,7 +2,7 @@
 
 Version: 1.0
 
-Status: Planned
+Status: Completed
 
 Owner: EOUS
 
@@ -143,3 +143,13 @@ This task validates existing integration and must not introduce new architecture
 * Project validation completed.
 * Changes reviewed.
 * Changes committed.
+
+---
+
+# Implementation and Validation
+
+* Extended the focused Core Platform suite to validate tool-derived results through Workspace, Conversation, Agent, SDK, and Provider final synthesis; Provider and planner failures; recovery on later turns; and SDK boundary failures. All 18 tests pass.
+* Confirmed a public Registry lookup could mutate stored tool metadata and bypass permission and input checks. Registry lookups now return isolated manifest copies.
+* Confirmed malformed tool responses could escape the Executor. The Executor now converts them to standardized SDK execution failures; unrelated tools remain usable.
+* Audited imports and runtime delegation: Conversation calls Agent; Agent uses Provider, Permission Manager, and Tool SDK abstractions; Execution does not import Orchestration; built-ins are registered through the SDK.
+* TypeScript, lint, formatting, development startup, production build, and Tauri release executable build pass. Full Tauri packaging remains blocked at the known WiX `light.exe` MSI step after `eous.exe` is built.
