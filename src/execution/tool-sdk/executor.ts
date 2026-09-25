@@ -66,13 +66,12 @@ export class ToolExecutor {
         };
       }
       return response;
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: {
           code: "TOOL_EXECUTION_FAILED",
-          message:
-            error instanceof Error ? error.message : "Tool execution failed",
+          message: "Tool execution failed",
           category: "execution"
         }
       };

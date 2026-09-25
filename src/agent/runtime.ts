@@ -166,7 +166,9 @@ export class DefaultAgent implements Agent {
       return providerResult(request.id, final, plan);
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Agent execution failed";
+        error instanceof PermissionRuntimeError
+          ? error.message
+          : "Agent execution failed";
       if (activePlan) {
         activePlan.status = "failed";
         activePlan.updatedAt = new Date().toISOString();

@@ -2,7 +2,7 @@
 
 Version: 1.0
 
-Status: Planned
+Status: Completed
 
 Owner: EOUS
 
@@ -151,3 +151,14 @@ Future roadmap capabilities must remain outside the Version 1 Core Platform scop
 * EPIC-002 completed.
 * Changes reviewed.
 * Changes committed.
+
+---
+
+# Implementation and Validation
+
+* Closed EH-004 exposure of unexpected exception messages at the Tool Executor, Agent, Conversation, and built-in Tool catch paths. Existing public error codes and intentional Permission, Provider, SDK, and validation results remain intact.
+* Added focused regressions for secret-bearing Executor, Agent, Conversation, and built-in Tool exceptions, including Agent plan details. All 22 Core Platform integration tests pass; the TASK-042 and TASK-043 isolation and permission regressions remain green.
+* Audited Workspace composition, public exports, layer imports, Provider independence, Tool SDK execution, permission-first approval, failure isolation, and TASK-044 scope. No unresolved Core Platform blocker was found.
+* TypeScript checking and production build (`pnpm build`), lint, formatting, and development startup/module responses pass.
+* Tauri release compilation produced `src-tauri/target/release/eous.exe`. MSI packaging failed only at the previously documented WiX `light.exe` environment step.
+* FEATURE-010 and EPIC-002 exit criteria are satisfied within the defined Core Platform scope.

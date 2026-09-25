@@ -92,13 +92,12 @@ export class CalculatorTool implements BuiltInTool<
         success: true,
         output: { result }
       };
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+    } catch {
       return {
         success: false,
         error: {
           code: "evaluation_failed",
-          message: message || "Failed to evaluate expression",
+          message: "Failed to evaluate expression",
           category: "execution"
         }
       };

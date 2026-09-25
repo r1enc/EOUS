@@ -272,6 +272,7 @@ test("explicit denial is recorded and prevents execution and final synthesis", a
   );
   const result = await workspace.execute({ id: "denied", prompt: "Read PDF" });
   assert.equal(result.error.code, "PERMISSION_DENIED");
+  assert.equal(result.error.message, "Permission 'read_file' was denied");
   assert.equal(calls.length, 1);
   assert.equal(workspace.getPermissionHistory()[0].response.decision, "denied");
 });
@@ -494,6 +495,7 @@ test("Provider failures at reasoning and final synthesis return through Workspac
     });
     assert.equal(failed.status, "failure");
     assert.equal(failed.error.code, "PROVIDER_UNAVAILABLE");
+    assert.equal(failed.error.message, "Temporary failure");
     assert.equal(workspace.getHistory().length, 0);
     assert.equal(call, failedCall);
     const recovered = await workspace.execute({
@@ -678,5 +680,139 @@ test("Workspace built-ins are isolated from mutations of the public shared colle
     sharedPdf.manifest = originalManifest;
     BUILTIN_TOOLS.splice(0, BUILTIN_TOOLS.length, ...originalTools);
     PdfReaderTool.prototype.execute = originalExecute;
+  }
+});
+
+test("unexpected Executor errors expose a stable SDK failure without internal details", async () => {
+  const secret = "internal-executor-secret-044";
+  const sdk = new DefaultToolSdkRuntime();
+  sdk.register({
+    manifest: {
+      id: "throwing-tool",
+      name: "Throwing Tool",
+      description: "Exercises the Executor failure boundary",
+      sdkVersion: "1.0.0",
+      toolVersion: "1.0.0",
+      capabilities: [],
+      requiredPermissions: [],
+      input: {},
+      output: {},
+      dependencies: []
+    },
+    async execute() {
+      throw new Error(secret);
+    }
+  });
+  const result = await sdk.execute({ toolId: "throwing-tool", input: {} });
+  assert.equal(result.success, false);
+  assert.deepEqual(result.error, {
+    code: "TOOL_EXECUTION_FAILED",
+    message: "Tool execution failed",
+    category: "execution"
+  });
+  assert.doesNotMatch(JSON.stringify(result), /internal-executor-secret-044/);
+});
+
+test("unexpected Agent and Conversation errors do not leak through public responses", async () => {
+  const secret = "internal-agent-secret-044";
+  const workspace = makeWorkspace(
+    {
+      async plan() {
+        throw new Error(secret);
+      }
+    },
+    []
+  );
+  const agentFailure = await workspace.execute({
+    id: "unexpected-agent",
+    prompt: "Run"
+  });
+  assert.deepEqual(agentFailure.error, {
+    code: "AGENT_EXECUTION_FAILED",
+    message: "Agent execution failed"
+  });
+  assert.doesNotMatch(JSON.stringify(agentFailure), /internal-agent-secret-044/);
+
+  const sdk = new DefaultToolSdkRuntime();
+  sdk.register(createBuiltInTools().find((tool) => tool.manifest.id === "calculator"));
+  const agent = new DefaultAgent(
+    "test",
+    "Test",
+    makeProvider([]),
+    "test-model",
+    sdk,
+    makePlanner("calculator", { expression: "2+2" }),
+    {
+      async approve() {
+        throw new Error(secret);
+      }
+    }
+  );
+  const plannedFailure = await agent.execute({
+    id: "unexpected-planned-agent",
+    prompt: "Run"
+  });
+  assert.deepEqual(plannedFailure.error, {
+    code: "AGENT_EXECUTION_FAILED",
+    message: "Agent execution failed"
+  });
+  assert.equal(plannedFailure.plan.steps[0].error, "Agent execution failed");
+  assert.doesNotMatch(JSON.stringify(plannedFailure), /internal-agent-secret-044/);
+
+  const conversation = new DefaultConversation("conversation-1", "Test", {
+    async execute() {
+      throw new Error("internal-conversation-secret-044");
+    }
+  });
+  const conversationFailure = await conversation.execute({
+    id: "unexpected-conversation",
+    prompt: "Run"
+  });
+  assert.deepEqual(conversationFailure.error, {
+    code: "CONVERSATION_FAILED",
+    message: "Conversation failed"
+  });
+  assert.doesNotMatch(
+    JSON.stringify(conversationFailure),
+    /internal-conversation-secret-044/
+  );
+});
+
+test("built-in unexpected errors preserve codes without leaking implementation details", async () => {
+  const calculator = createBuiltInTools().find(
+    (tool) => tool.manifest.id === "calculator"
+  );
+  const result = await calculator.execute({
+    toolId: "calculator",
+    input: { expression: "1+" }
+  });
+  assert.equal(result.success, false);
+  assert.deepEqual(result.error, {
+    code: "evaluation_failed",
+    message: "Failed to evaluate expression",
+    category: "execution"
+  });
+
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => {
+      throw new Error("internal-fetch-secret-044");
+    };
+    const reader = createBuiltInTools().find(
+      (tool) => tool.manifest.id === "text-reader"
+    );
+    const failed = await reader.execute({
+      toolId: "text-reader",
+      input: { filePath: "https://example.com/file.txt" }
+    });
+    assert.equal(failed.success, false);
+    assert.deepEqual(failed.error, {
+      code: "read_failed",
+      message: "Failed to read text file",
+      category: "execution"
+    });
+    assert.doesNotMatch(JSON.stringify(failed), /internal-fetch-secret-044/);
+  } finally {
+    globalThis.fetch = originalFetch;
   }
 });

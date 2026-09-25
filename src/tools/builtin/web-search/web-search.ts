@@ -96,13 +96,12 @@ export class WebSearchTool implements BuiltInTool<
         success: true,
         output: { results }
       };
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+    } catch {
       return {
         success: false,
         error: {
           code: "search_failed",
-          message: message || "Failed to search the web",
+          message: "Failed to search the web",
           category: "execution"
         }
       };

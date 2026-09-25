@@ -72,11 +72,11 @@ export class DefaultConversation implements Conversation {
         }
       );
       return { id: request.id, content: result.content, status: "success" };
-    } catch (error) {
+    } catch {
       return failure(
         request?.id ?? "",
         "CONVERSATION_FAILED",
-        error instanceof Error ? error.message : "Conversation failed"
+        "Conversation failed"
       );
     }
   }

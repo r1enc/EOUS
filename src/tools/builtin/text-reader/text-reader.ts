@@ -111,13 +111,12 @@ export class TxtReaderTool implements BuiltInTool<
           sizeBytes
         }
       };
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+    } catch {
       return {
         success: false,
         error: {
           code: "read_failed",
-          message: message || "Failed to read text file",
+          message: "Failed to read text file",
           category: "execution"
         }
       };
