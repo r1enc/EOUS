@@ -2,7 +2,7 @@
 
 Version: 1.0
 
-Status: Planned
+Status: Completed
 
 Owner: EOUS
 
@@ -83,3 +83,12 @@ M
 # Definition of Done
 
 The acceptance criteria are verified; relevant tests and applicable build or lint checks pass; architectural boundaries remain intact; and the change is independently reviewable as one logical commit.
+
+---
+
+# Implementation and Validation
+
+* Added an Infrastructure-only SQLite storage contract and adapter for conversation metadata and messages. Queries use bound parameters; reads order messages by timestamp and SQLite insertion order for equal timestamps.
+* Reused the existing schema and connection. No migration or dependency was added. Conversation, Agent, Workspace, and other runtime behavior remain unchanged.
+* Four isolated SQLite tests pass, including duplicate IDs, enforced foreign keys, equal timestamps, and close/reopen persistence. All 22 existing Core Platform integration tests pass.
+* `pnpm build`, `pnpm lint`, `pnpm format:check`, focused file formatting, and read-only database lifecycle validation pass.

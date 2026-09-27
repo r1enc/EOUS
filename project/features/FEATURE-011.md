@@ -45,7 +45,7 @@ Conversation persistence is separate from long-term Memory.
 
 | Task ID | Title | Status |
 | --- | --- | --- |
-| TASK-045 | Add Conversation Storage Adapter | Planned |
+| TASK-045 | Add Conversation Storage Adapter | Completed |
 | TASK-046 | Add Session Operations | Planned |
 | TASK-047 | Persist Completed Turns | Planned |
 
