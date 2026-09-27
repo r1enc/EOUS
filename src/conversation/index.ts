@@ -10,6 +10,12 @@ export type {
   ConversationHistory
 } from "./history";
 export type { ConversationSession } from "./session";
+export { ConversationSessionOperations } from "./session-operations";
+export type {
+  CreateSessionInput,
+  PersistedConversationSession,
+  SessionResult
+} from "./session-operations";
 export type {
   ConversationLifecycleState,
   ConversationLifecycleEvent

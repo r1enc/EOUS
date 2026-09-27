@@ -2,7 +2,7 @@
 
 Version: 1.0
 
-Status: Planned
+Status: Completed
 
 Owner: EOUS
 
@@ -83,3 +83,11 @@ M
 # Definition of Done
 
 The acceptance criteria are verified; relevant tests and applicable build or lint checks pass; architectural boundaries remain intact; and the change is independently reviewable as one logical commit.
+
+---
+
+# Implementation and Validation
+
+* Added Conversation-layer create, list, load, and resume operations over the `ConversationStorage` interface. Results contain persisted metadata only; runtime history hydration remains TASK-047.
+* Invalid input, missing sessions, and duplicates found before insertion return defined failures. Ambiguous insertion and storage failures return a sanitized session failure.
+* Focused fake-storage tests and isolated SQLite close/reopen coverage pass. Existing storage and Core Platform tests, build, lint, formatting, and read-only database lifecycle validation pass.
