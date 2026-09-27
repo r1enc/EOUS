@@ -20,6 +20,10 @@ export interface ConversationStorage {
   getConversation(id: string): Promise<StoredConversation | undefined>;
   listConversations(): Promise<StoredConversation[]>;
   insertMessage(message: StoredConversationMessage): Promise<void>;
+  insertCompletedTurn(
+    user: StoredConversationMessage,
+    assistant: StoredConversationMessage
+  ): Promise<void>;
   getMessages(conversationId: string): Promise<StoredConversationMessage[]>;
 }
 
@@ -79,6 +83,46 @@ export class SqliteConversationStorage implements ConversationStorage {
         message.role,
         message.content,
         message.createdAt
+      ]
+    );
+  }
+
+  async insertCompletedTurn(
+    user: StoredConversationMessage,
+    assistant: StoredConversationMessage
+  ): Promise<void> {
+    for (const message of [user, assistant]) {
+      requireId(message.id);
+      requireId(message.conversationId);
+      requireTimestamp(message.createdAt);
+      if (typeof message.content !== "string") {
+        throw new TypeError("Message content must be a string");
+      }
+    }
+    if (
+      user.role !== "user" ||
+      assistant.role !== "assistant" ||
+      user.conversationId !== assistant.conversationId ||
+      user.createdAt !== assistant.createdAt ||
+      user.id === assistant.id
+    ) {
+      throw new TypeError("A matching user and assistant turn is required");
+    }
+
+    const database = await this.getConnection();
+    await database.execute(
+      "INSERT OR ABORT INTO conversation_messages (id, conversation_id, role, content, created_at) VALUES ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10)",
+      [
+        user.id,
+        user.conversationId,
+        user.role,
+        user.content,
+        user.createdAt,
+        assistant.id,
+        assistant.conversationId,
+        assistant.role,
+        assistant.content,
+        assistant.createdAt
       ]
     );
   }

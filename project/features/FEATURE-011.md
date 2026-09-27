@@ -2,7 +2,7 @@
 
 Version: 1.0
 
-Status: Planned
+Status: Completed
 
 Owner: EOUS
 
@@ -47,7 +47,7 @@ Conversation persistence is separate from long-term Memory.
 | --- | --- | --- |
 | TASK-045 | Add Conversation Storage Adapter | Completed |
 | TASK-046 | Add Session Operations | Completed |
-| TASK-047 | Persist Completed Turns | Planned |
+| TASK-047 | Persist Completed Turns | Completed |
 
 ---
 

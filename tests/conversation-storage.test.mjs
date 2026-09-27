@@ -199,3 +199,41 @@ test("retrieves previously written data after database close and reopen", async 
     second
   ]);
 });
+
+test("inserts a completed turn as one ordered, atomic SQLite statement", async (t) => {
+  const { storage } = createFixture(t);
+  await storage.insertConversation(firstConversation);
+  const user = {
+    id: "turn-1:user",
+    conversationId: firstConversation.id,
+    role: "user",
+    content: "Question",
+    createdAt: 5000
+  };
+  const assistant = {
+    ...user,
+    id: "turn-1:assistant",
+    role: "assistant",
+    content: "Answer"
+  };
+  await storage.insertCompletedTurn(user, assistant);
+  assert.deepEqual(await storage.getMessages(firstConversation.id), [
+    user,
+    assistant
+  ]);
+
+  const nextUser = { ...user, id: "turn-2:user", createdAt: 6000 };
+  await assert.rejects(
+    storage.insertCompletedTurn(nextUser, {
+      ...assistant,
+      createdAt: 6000
+    })
+  );
+  assert.deepEqual(await storage.getMessages(firstConversation.id), [
+    user,
+    assistant
+  ]);
+  await assert.rejects(
+    storage.insertCompletedTurn(user, { ...assistant, conversationId: "other" })
+  );
+});

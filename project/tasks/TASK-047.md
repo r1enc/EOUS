@@ -2,7 +2,7 @@
 
 Version: 1.0
 
-Status: Planned
+Status: Completed
 
 Owner: EOUS
 
@@ -84,3 +84,11 @@ M
 # Definition of Done
 
 The acceptance criteria are verified; relevant tests and applicable build or lint checks pass; architectural boundaries remain intact; and the change is independently reviewable as one logical commit.
+
+---
+
+# Implementation and Validation
+
+* Added validated persisted-history loading and optional hydration/persistence for `DefaultConversation` and Workspace. Existing synchronous, non-persistent construction remains supported.
+* Completed turns use one bound two-row SQLite insert. Memory updates only after a confirmed write; Agent failures write neither message. Retry checks validate existing pairs and reject partial or conflicting turns without leaking storage errors.
+* Isolated SQLite tests cover atomic rollback, ordering, cross-conversation request IDs, and create → converse → reopen → resume → continue. Existing session, storage, and Core Platform tests remain valid.

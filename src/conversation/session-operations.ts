@@ -3,6 +3,8 @@ import type {
   StoredConversation
 } from "../infrastructure/database/conversation-storage";
 import type { ConversationError } from "./error";
+import type { ConversationMessage } from "./history";
+import { toConversationHistory } from "./persisted-history";
 
 export interface PersistedConversationSession {
   id: string;
@@ -44,6 +46,11 @@ const storageFailure: ConversationError = {
   code: "session_storage_failed",
   message: "Conversation storage failed",
   category: "session"
+};
+const invalidHistory: ConversationError = {
+  code: "invalid_persisted_history",
+  message: "Stored conversation history is invalid",
+  category: "history"
 };
 
 function failure<T>(error: ConversationError): SessionResult<T> {
@@ -127,5 +134,20 @@ export class ConversationSessionOperations {
     id: string
   ): Promise<SessionResult<PersistedConversationSession>> {
     return this.loadSession(id);
+  }
+
+  async loadHistory(id: string): Promise<SessionResult<ConversationMessage[]>> {
+    if (!validId(id)) return failure(invalidId);
+
+    try {
+      if (!(await this.storage.getConversation(id)))
+        return failure(missingSession);
+      const rows = await this.storage.getMessages(id);
+      const messages = toConversationHistory(rows, id);
+      if (!messages) return failure(invalidHistory);
+      return { status: "success", value: messages };
+    } catch {
+      return failure(storageFailure);
+    }
   }
 }

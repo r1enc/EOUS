@@ -2,7 +2,8 @@ import { DefaultAgent, type AgentPlanner } from "../agent";
 import {
   DefaultConversation,
   type Conversation,
-  type ConversationMessage
+  type ConversationMessage,
+  type ConversationTurnPersistence
 } from "../conversation";
 import {
   DefaultPermissionManager,
@@ -21,6 +22,8 @@ export interface WorkspaceConfig {
   conversationTitle: string;
   planner?: AgentPlanner;
   approvePermission?: PermissionApprovalHandler;
+  initialHistory?: ConversationMessage[];
+  conversationPersistence?: ConversationTurnPersistence;
 }
 
 export interface Workspace extends Conversation {
@@ -52,7 +55,11 @@ export function createWorkspace(config: WorkspaceConfig): Workspace {
   const conversation = new DefaultConversation(
     config.conversationId,
     config.conversationTitle,
-    agent
+    agent,
+    {
+      initialHistory: config.initialHistory,
+      persistence: config.conversationPersistence
+    }
   );
   return {
     id: conversation.id,
