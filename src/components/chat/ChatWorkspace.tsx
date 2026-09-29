@@ -4,7 +4,19 @@ import { MessageComposer } from "./MessageComposer";
 import { MessageList } from "./MessageList";
 import { chatReducer, initialChatState, prepareAttempt } from "./chat-state";
 
-export function ChatWorkspace({ workspace }: { workspace: Workspace }) {
+interface ChatWorkspaceProps {
+  workspace: Workspace;
+  disabled?: boolean;
+  canSubmit?: () => boolean;
+  onBusyChange?: (busy: boolean) => void;
+}
+
+export function ChatWorkspace({
+  workspace,
+  disabled = false,
+  canSubmit,
+  onBusyChange
+}: ChatWorkspaceProps) {
   const [state, dispatch] = useReducer(chatReducer, workspace, (current) =>
     initialChatState(current.getHistory())
   );
@@ -12,16 +24,19 @@ export function ChatWorkspace({ workspace }: { workspace: Workspace }) {
   const composer = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (!state.pending) composer.current?.focus();
-  }, [state.pending]);
+    if (!state.pending && !disabled) composer.current?.focus();
+  }, [state.pending, disabled]);
 
   async function submit() {
     // React state updates are batched; lock immediately for repeated send events.
-    if (busy.current) return;
+    if (busy.current || disabled || canSubmit?.() === false) return;
     busy.current = true;
+    let started = false;
     try {
       const attempt = prepareAttempt(state, () => crypto.randomUUID());
       if (!attempt) return;
+      started = true;
+      onBusyChange?.(true);
       dispatch({ type: "start", attempt });
       const response = await workspace.execute({
         ...attempt,
@@ -36,6 +51,7 @@ export function ChatWorkspace({ workspace }: { workspace: Workspace }) {
       dispatch({ type: "failure" });
     } finally {
       busy.current = false;
+      if (started) onBusyChange?.(false);
     }
   }
 
@@ -51,7 +67,9 @@ export function ChatWorkspace({ workspace }: { workspace: Workspace }) {
         <p className="chat-status" role="status">
           {state.pending
             ? "Working on your request…"
-            : "Ready for your next goal"}
+            : disabled
+              ? "Loading conversation…"
+              : "Ready for your next goal"}
         </p>
         {state.failed && (
           <p className="chat-error" role="alert">
@@ -63,6 +81,7 @@ export function ChatWorkspace({ workspace }: { workspace: Workspace }) {
           ref={composer}
           draft={state.draft}
           pending={Boolean(state.pending)}
+          disabled={disabled}
           onChange={(draft) => dispatch({ type: "edit", draft })}
           onSubmit={submit}
         />

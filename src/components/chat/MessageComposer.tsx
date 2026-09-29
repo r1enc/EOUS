@@ -6,6 +6,7 @@ interface MessageComposerProps {
   ref: Ref<HTMLTextAreaElement>;
   draft: string;
   pending: boolean;
+  disabled?: boolean;
   onChange: (draft: string) => void;
   onSubmit: () => void;
 }
@@ -14,6 +15,7 @@ export function MessageComposer({
   ref,
   draft,
   pending,
+  disabled = false,
   onChange,
   onSubmit
 }: MessageComposerProps) {
@@ -24,7 +26,8 @@ export function MessageComposer({
       className="message-composer"
       onSubmit={(event) => {
         event.preventDefault();
-        if (!pending && draft.trim() && !composing.current) onSubmit();
+        if (!pending && !disabled && draft.trim() && !composing.current)
+          onSubmit();
       }}
     >
       <label htmlFor={id}>Message the Agent</label>
@@ -33,7 +36,7 @@ export function MessageComposer({
         id={id}
         rows={3}
         value={draft}
-        readOnly={pending}
+        readOnly={pending || disabled}
         aria-describedby={`${id}-hint`}
         placeholder="Describe what you want to accomplish…"
         onChange={(event) => onChange(event.target.value)}
@@ -53,12 +56,12 @@ export function MessageComposer({
           )
             return;
           event.preventDefault();
-          if (!pending && draft.trim()) onSubmit();
+          if (!pending && !disabled && draft.trim()) onSubmit();
         }}
       />
       <div className="composer-actions">
         <p id={`${id}-hint`}>Enter to send · Shift+Enter for a new line</p>
-        <Button type="submit" disabled={pending || !draft.trim()}>
+        <Button type="submit" disabled={pending || disabled || !draft.trim()}>
           <Send aria-hidden="true" />
           {pending ? "Sending…" : "Send"}
         </Button>
