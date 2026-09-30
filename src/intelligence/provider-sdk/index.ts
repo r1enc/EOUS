@@ -12,6 +12,7 @@ export type {
   ProviderRequestOptions
 } from "./request";
 export type { ProviderResponse, ProviderUsage } from "./response";
+export type { ProviderStreamEvent } from "./stream";
 export {
   ProviderValidationError,
   validateProvider,

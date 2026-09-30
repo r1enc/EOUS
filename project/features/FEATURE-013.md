@@ -46,7 +46,7 @@ The existing synchronous provider path and non-streaming providers remain suppor
 
 | Task ID | Title | Status |
 | --- | --- | --- |
-| TASK-051 | Define Provider-Neutral Stream Contract | Planned |
+| TASK-051 | Define Provider-Neutral Stream Contract | Completed |
 | TASK-052 | Propagate Streamed Turns | Planned |
 | TASK-053 | Display Incremental Responses | Planned |
 | TASK-054 | Render Conversation Markdown | Planned |

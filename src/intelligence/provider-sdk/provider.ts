@@ -1,5 +1,6 @@
 import type { ProviderRequest } from "./request";
 import type { ProviderResponse } from "./response";
+import type { ProviderStreamEvent } from "./stream";
 
 export interface ProviderAuth {
   apiKey?: string;
@@ -26,4 +27,7 @@ export interface Provider {
   capabilities: ProviderCapabilities;
   config?: ProviderConfig;
   generateCompletion(request: ProviderRequest): Promise<ProviderResponse>;
+  streamCompletion?(
+    request: ProviderRequest
+  ): AsyncIterable<ProviderStreamEvent>;
 }
