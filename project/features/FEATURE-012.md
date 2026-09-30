@@ -2,7 +2,7 @@
 
 Version: 1.0
 
-Status: Planned
+Status: Completed
 
 Owner: EOUS
 
@@ -46,7 +46,7 @@ The Presentation Layer submits through Workspace and never calls providers or to
 | --- | --- | --- |
 | TASK-048 | Build Chat Interaction | Completed |
 | TASK-049 | Add Conversation History Navigation | Completed |
-| TASK-050 | Show Execution and Permission Feedback | Planned |
+| TASK-050 | Show Execution and Permission Feedback | Completed |
 
 ---
 

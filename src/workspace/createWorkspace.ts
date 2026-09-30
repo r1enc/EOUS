@@ -13,6 +13,7 @@ import {
 import type { ProviderRegistry } from "../intelligence/provider-sdk";
 import { DefaultToolSdkRuntime } from "../execution/tool-sdk";
 import { createBuiltInTools } from "../tools/builtin";
+import type { PermissionInteraction } from "./permission-interaction";
 
 export interface WorkspaceConfig {
   providerRegistry: ProviderRegistry;
@@ -29,6 +30,7 @@ export interface WorkspaceConfig {
 export interface Workspace extends Conversation {
   getHistory(): ConversationMessage[];
   getPermissionHistory(): PermissionLifecycle[];
+  permissionInteraction?: PermissionInteraction;
 }
 
 export function createWorkspace(config: WorkspaceConfig): Workspace {

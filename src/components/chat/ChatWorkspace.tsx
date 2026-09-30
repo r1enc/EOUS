@@ -1,8 +1,12 @@
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useReducer, useRef, useSyncExternalStore } from "react";
 import type { Workspace } from "../../workspace";
 import { MessageComposer } from "./MessageComposer";
 import { MessageList } from "./MessageList";
+import { PermissionDialog } from "./PermissionDialog";
 import { chatReducer, initialChatState, prepareAttempt } from "./chat-state";
+
+const noPending = () => null;
+const noSubscription = () => () => {};
 
 interface ChatWorkspaceProps {
   workspace: Workspace;
@@ -22,6 +26,15 @@ export function ChatWorkspace({
   );
   const busy = useRef(false);
   const composer = useRef<HTMLTextAreaElement>(null);
+  const interaction = workspace.permissionInteraction;
+  const pendingPermission = useSyncExternalStore(
+    interaction?.subscribe ?? noSubscription,
+    interaction?.getPending ?? noPending,
+    noPending
+  );
+  const decisions =
+    workspace.getPermissionHistory?.().filter((entry) => entry.response) ?? [];
+  const lastPermission = decisions[decisions.length - 1];
 
   useEffect(() => {
     if (!state.pending && !disabled) composer.current?.focus();
@@ -45,7 +58,7 @@ export function ChatWorkspace({
       if (response.status === "success") {
         dispatch({ type: "success", history: workspace.getHistory() });
       } else {
-        dispatch({ type: "failure" });
+        dispatch({ type: "failure", code: response.error?.code });
       }
     } catch {
       dispatch({ type: "failure" });
@@ -65,16 +78,27 @@ export function ChatWorkspace({
       <MessageList history={state.history} pending={state.pending} />
       <div className="composer-panel">
         <p className="chat-status" role="status">
-          {state.pending
-            ? "Working on your request…"
-            : disabled
-              ? "Loading conversation…"
-              : "Ready for your next goal"}
+          {pendingPermission
+            ? "Awaiting your approval…"
+            : state.pending
+              ? "Working on your request…"
+              : disabled
+                ? "Loading conversation…"
+                : "Ready for your next goal"}
         </p>
         {state.failed && (
           <p className="chat-error" role="alert">
-            Your request could not be completed. Your message is still here;
-            please try again.
+            {state.failureCode === "PERMISSION_DENIED"
+              ? "The requested action was not approved. Your message is still here."
+              : "Your request could not be completed. Your message is still here; please try again."}
+          </p>
+        )}
+        {!state.pending && lastPermission?.response && (
+          <p className="permission-outcome" role="status">
+            Last permission: {lastPermission.request.permission.name} —{" "}
+            {lastPermission.response.decision === "granted"
+              ? "granted"
+              : "denied"}
           </p>
         )}
         <MessageComposer
@@ -86,6 +110,12 @@ export function ChatWorkspace({
           onSubmit={submit}
         />
       </div>
+      {interaction && (
+        <PermissionDialog
+          interaction={interaction}
+          pending={pendingPermission}
+        />
+      )}
     </section>
   );
 }

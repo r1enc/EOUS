@@ -11,16 +11,24 @@ export interface ChatState {
   pending: ChatAttempt | null;
   retryId: string | null;
   failed: boolean;
+  failureCode: string | null;
 }
 
 type ChatAction =
   | { type: "edit"; draft: string }
   | { type: "start"; attempt: ChatAttempt }
   | { type: "success"; history: ConversationMessage[] }
-  | { type: "failure" };
+  | { type: "failure"; code?: string };
 
 export function initialChatState(history: ConversationMessage[]): ChatState {
-  return { draft: "", history, pending: null, retryId: null, failed: false };
+  return {
+    draft: "",
+    history,
+    pending: null,
+    retryId: null,
+    failed: false,
+    failureCode: null
+  };
 }
 
 export function prepareAttempt(
@@ -35,10 +43,21 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
   switch (action.type) {
     case "edit":
       if (state.pending || action.draft === state.draft) return state;
-      return { ...state, draft: action.draft, retryId: null, failed: false };
+      return {
+        ...state,
+        draft: action.draft,
+        retryId: null,
+        failed: false,
+        failureCode: null
+      };
     case "start":
       if (state.pending) return state;
-      return { ...state, pending: action.attempt, failed: false };
+      return {
+        ...state,
+        pending: action.attempt,
+        failed: false,
+        failureCode: null
+      };
     case "success":
       return initialChatState(action.history);
     case "failure":
@@ -46,7 +65,8 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
         ...state,
         pending: null,
         retryId: state.pending?.id ?? state.retryId,
-        failed: true
+        failed: true,
+        failureCode: action.code ?? null
       };
   }
 }

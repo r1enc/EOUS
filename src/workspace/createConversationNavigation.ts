@@ -4,11 +4,8 @@ import {
   type SessionResult
 } from "../conversation";
 import type { ConversationStorage } from "../infrastructure/database/conversation-storage";
-import {
-  createWorkspace,
-  type Workspace,
-  type WorkspaceConfig
-} from "./createWorkspace";
+import type { Workspace, WorkspaceConfig } from "./createWorkspace";
+import { createInteractiveWorkspace } from "./createInteractiveWorkspace";
 import {
   untitledConversation,
   type ConversationNavigation
@@ -42,13 +39,15 @@ export function createConversationNavigation({
   workspaceConfig,
   createId = () => crypto.randomUUID()
 }: ConversationNavigationConfig): ConversationNavigation {
+  if (workspaceConfig.approvePermission !== undefined)
+    throw new Error("Interactive navigation conflicts with approvePermission");
   const sessions = new ConversationSessionOperations(storage);
   function build(
     id: string,
     title: string | null,
     history: ConversationMessage[]
   ): Workspace {
-    return createWorkspace({
+    return createInteractiveWorkspace({
       ...workspaceConfig,
       conversationId: id,
       conversationTitle: title ?? untitledConversation,

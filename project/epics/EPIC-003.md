@@ -47,7 +47,7 @@ All user requests continue through the Agent. Tools execute through the Tool SDK
 | Feature ID | Title | Status |
 | --- | --- | --- |
 | FEATURE-011 | Persistent Conversations | Completed |
-| FEATURE-012 | Chat Workspace and History | Planned |
+| FEATURE-012 | Chat Workspace and History | Completed |
 | FEATURE-013 | Streaming and Message Rendering | Planned |
 
 ---
