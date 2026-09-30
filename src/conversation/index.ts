@@ -7,6 +7,7 @@ export type {
 export type { ConversationError, ConversationErrorCategory } from "./error";
 export type { ConversationRequest } from "./request";
 export type { ConversationResponse } from "./response";
+export type { ConversationStreamEvent } from "./stream";
 export type { ConversationContext } from "./context";
 export type {
   ConversationMessage,

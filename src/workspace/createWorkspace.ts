@@ -67,6 +67,7 @@ export function createWorkspace(config: WorkspaceConfig): Workspace {
     id: conversation.id,
     title: conversation.title,
     execute: (request) => conversation.execute(request),
+    executeStream: (request) => conversation.executeStream(request),
     getHistory: () => conversation.getHistory(),
     getPermissionHistory: () => permissions.getHistory()
   };

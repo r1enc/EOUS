@@ -4,6 +4,7 @@ export type { AgentPlanner } from "./runtime";
 export type { AgentError, AgentErrorCategory } from "./error";
 export type { AgentRequest } from "./request";
 export type { AgentResponse } from "./response";
+export type { AgentStreamEvent } from "./stream";
 export type { AgentContext, AgentMessage, AgentMessageRole } from "./context";
 export type { AgentExecutionStep, AgentExecutionPlan } from "./planning";
 export type { AgentLifecycleState, AgentLifecycleEvent } from "./lifecycle";

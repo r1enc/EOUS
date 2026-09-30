@@ -1,7 +1,9 @@
 import type {
   Provider,
   ProviderMessage,
-  ProviderResponse
+  ProviderRequest,
+  ProviderResponse,
+  ProviderStreamEvent
 } from "../intelligence/provider-sdk";
 import {
   validateSdkRequest,
@@ -16,8 +18,11 @@ import {
 import type { Agent } from "./agent";
 import type { AgentRequest } from "./request";
 import type { AgentResponse } from "./response";
+import type { AgentStreamEvent } from "./stream";
 import type { AgentExecutionPlan, AgentExecutionStep } from "./planning";
 import { validateAgentExecutionPlan, validateAgentRequest } from "./validation";
+
+type ContentEvent = Extract<AgentStreamEvent, { type: "content" }>;
 
 export interface AgentPlanner {
   // Each step's action identifies a registered tool; input follows its manifest.
@@ -46,12 +51,39 @@ export class DefaultAgent implements Agent {
   }
 
   async execute(request: AgentRequest): Promise<AgentResponse> {
+    for await (const event of this.run(request, false)) {
+      if (event.type !== "content") return event.response;
+    }
+    return failure(
+      request?.id ?? "",
+      "AGENT_EXECUTION_FAILED",
+      "Agent execution failed"
+    );
+  }
+
+  executeStream(request: AgentRequest): AsyncIterable<AgentStreamEvent> {
+    return this.run(request, true);
+  }
+
+  private async *run(
+    request: AgentRequest,
+    stream: boolean
+  ): AsyncGenerator<AgentStreamEvent> {
     let activePlan: AgentExecutionPlan | undefined;
     let activeStep: AgentExecutionStep | undefined;
     try {
       const errors = validateAgentRequest(request);
-      if (errors.length > 0)
-        return failure(request?.id ?? "", errors[0].code, errors[0].message);
+      if (errors.length > 0) {
+        yield {
+          type: "failure",
+          response: failure(
+            request?.id ?? "",
+            errors[0].code,
+            errors[0].message
+          )
+        };
+        return;
+      }
 
       const messages: ProviderMessage[] = [
         ...(request.context?.history ?? [])
@@ -62,32 +94,66 @@ export class DefaultAgent implements Agent {
           })),
         { role: "user", content: request.prompt }
       ];
-
-      const reasoning = await this.provider.generateCompletion({
-        model: this.model,
-        messages
-      });
+      const initialRequest = { model: this.model, messages };
+      const initial = this.completion(initialRequest, stream);
+      const buffered: ContentEvent[] = [];
+      let reasoning: ProviderResponse;
+      if (this.planner) {
+        while (true) {
+          const next = await initial.next();
+          if (next.done) {
+            reasoning = next.value;
+            break;
+          }
+          buffered.push(next.value);
+        }
+      } else {
+        reasoning = yield* initial;
+      }
       if (!reasoning.success) {
-        return failure(
-          request.id,
-          reasoning.error.code,
-          reasoning.error.message
-        );
+        yield {
+          type: "failure",
+          response: failure(
+            request.id,
+            reasoning.error.code,
+            reasoning.error.message
+          )
+        };
+        return;
       }
 
-      // No provider response syntax is defined for tool selection. A planner
-      // must be supplied by the host before tool steps can be requested.
-      if (!this.planner) return success(request.id, reasoning.content);
-
+      // Planner input is internal until it is known to be the final answer.
+      if (!this.planner) {
+        yield {
+          type: "complete",
+          response: success(request.id, reasoning.content)
+        };
+        return;
+      }
       const proposedPlan = await this.planner.plan(
         request,
         reasoning.content,
         this.tools.listManifests()
       );
-      if (!proposedPlan) return success(request.id, reasoning.content);
+      if (!proposedPlan) {
+        for (const event of buffered) yield event;
+        yield {
+          type: "complete",
+          response: success(request.id, reasoning.content)
+        };
+        return;
+      }
       const planErrors = validateAgentExecutionPlan(proposedPlan);
       if (planErrors.length > 0) {
-        return failure(request.id, planErrors[0].code, planErrors[0].message);
+        yield {
+          type: "failure",
+          response: failure(
+            request.id,
+            planErrors[0].code,
+            planErrors[0].message
+          )
+        };
+        return;
       }
 
       const plan = structuredClone(proposedPlan);
@@ -102,7 +168,11 @@ export class DefaultAgent implements Agent {
           plan.status = "failed";
           step.status = "failed";
           step.error = `Tool '${step.action}' is not registered`;
-          return failure(request.id, "TOOL_NOT_FOUND", step.error, plan);
+          yield {
+            type: "failure",
+            response: failure(request.id, "TOOL_NOT_FOUND", step.error, plan)
+          };
+          return;
         }
 
         const execution = structuredClone({
@@ -114,7 +184,16 @@ export class DefaultAgent implements Agent {
           plan.status = "failed";
           step.status = "failed";
           step.error = inputError.message;
-          return failure(request.id, inputError.code, inputError.message, plan);
+          yield {
+            type: "failure",
+            response: failure(
+              request.id,
+              inputError.code,
+              inputError.message,
+              plan
+            )
+          };
+          return;
         }
         const approval = await this.permissions.approve(
           execution,
@@ -133,12 +212,16 @@ export class DefaultAgent implements Agent {
           plan.status = "failed";
           step.status = "failed";
           step.error = result.error.message;
-          return failure(
-            request.id,
-            result.error.code,
-            result.error.message,
-            plan
-          );
+          yield {
+            type: "failure",
+            response: failure(
+              request.id,
+              result.error.code,
+              result.error.message,
+              plan
+            )
+          };
+          return;
         }
         step.status = "completed";
         step.output = result.output;
@@ -147,23 +230,41 @@ export class DefaultAgent implements Agent {
       plan.status = "completed";
       activeStep = undefined;
 
-      const final = await this.provider.generateCompletion({
-        model: this.model,
-        messages: [
-          ...messages,
-          { role: "assistant", content: reasoning.content },
-          {
-            role: "user",
-            content: `Tool results: ${JSON.stringify(
-              plan.steps.map((step) => ({
-                action: step.action,
-                output: step.output
-              }))
-            )}. Provide the final response to the original request.`
-          }
-        ]
-      });
-      return providerResult(request.id, final, plan);
+      const final = yield* this.completion(
+        {
+          model: this.model,
+          messages: [
+            ...messages,
+            { role: "assistant", content: reasoning.content },
+            {
+              role: "user",
+              content: `Tool results: ${JSON.stringify(
+                plan.steps.map((step) => ({
+                  action: step.action,
+                  output: step.output
+                }))
+              )}. Provide the final response to the original request.`
+            }
+          ]
+        },
+        stream
+      );
+      if (final.success) {
+        yield {
+          type: "complete",
+          response: success(request.id, final.content, plan)
+        };
+      } else {
+        yield {
+          type: "failure",
+          response: failure(
+            request.id,
+            final.error.code,
+            final.error.message,
+            plan
+          )
+        };
+      }
     } catch (error) {
       const message =
         error instanceof PermissionRuntimeError
@@ -177,33 +278,87 @@ export class DefaultAgent implements Agent {
         activeStep.status = "failed";
         activeStep.error = message;
       }
-      return failure(
-        request?.id ?? "",
-        error instanceof PermissionRuntimeError
-          ? error.code
-          : "AGENT_EXECUTION_FAILED",
-        message,
-        activePlan
-      );
+      yield {
+        type: "failure",
+        response: failure(
+          request?.id ?? "",
+          error instanceof PermissionRuntimeError
+            ? error.code
+            : "AGENT_EXECUTION_FAILED",
+          message,
+          activePlan
+        )
+      };
     }
+  }
+
+  private async *completion(
+    request: ProviderRequest,
+    stream: boolean
+  ): AsyncGenerator<ContentEvent, ProviderResponse> {
+    if (!stream || typeof this.provider.streamCompletion !== "function") {
+      return await this.provider.generateCompletion(request);
+    }
+    let terminal: ProviderResponse | undefined;
+    for await (const event of this.provider.streamCompletion(request)) {
+      if (!validProviderStreamEvent(event) || terminal) {
+        throw new Error("Invalid provider stream");
+      }
+      if (event.type === "content") {
+        yield { type: "content", delta: event.delta };
+      } else if (event.type === "complete") {
+        terminal = event.response;
+      } else {
+        terminal = { success: false, error: event.error };
+      }
+    }
+    if (!terminal) throw new Error("Provider stream ended without a result");
+    return terminal;
   }
 }
 
-function providerResult(
-  id: string,
-  response: ProviderResponse,
-  plan: AgentExecutionPlan
-): AgentResponse {
-  return response.success
-    ? success(id, response.content, plan)
-    : failure(id, response.error.code, response.error.message, plan);
+function validProviderStreamEvent(
+  value: unknown
+): value is ProviderStreamEvent {
+  if (!value || typeof value !== "object") return false;
+  const event = value as Record<string, unknown>;
+  if (event.type === "content") return typeof event.delta === "string";
+  if (event.type === "complete") {
+    const response = event.response;
+    return (
+      !!response &&
+      typeof response === "object" &&
+      (response as Record<string, unknown>).success === true &&
+      (response as Record<string, unknown>).role === "assistant" &&
+      typeof (response as Record<string, unknown>).content === "string"
+    );
+  }
+  if (event.type === "failure") {
+    const error = event.error;
+    if (!error || typeof error !== "object") return false;
+    const fields = error as Record<string, unknown>;
+    return (
+      typeof fields.code === "string" &&
+      typeof fields.message === "string" &&
+      typeof fields.category === "string" &&
+      [
+        "api_error",
+        "rate_limit",
+        "authentication",
+        "validation",
+        "timeout",
+        "unknown"
+      ].includes(fields.category)
+    );
+  }
+  return false;
 }
 
 function success(
   id: string,
   content: string,
   plan?: AgentExecutionPlan
-): AgentResponse {
+): AgentResponse & { status: "success" } {
   return { id, content, status: "success", plan };
 }
 
@@ -212,6 +367,6 @@ function failure(
   code: string,
   message: string,
   plan?: AgentExecutionPlan
-): AgentResponse {
+): AgentResponse & { status: "failure" } {
   return { id, content: "", status: "failure", error: { code, message }, plan };
 }

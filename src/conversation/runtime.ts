@@ -1,4 +1,9 @@
-import type { Agent, AgentMessage } from "../agent";
+import type {
+  Agent,
+  AgentMessage,
+  AgentResponse,
+  AgentStreamEvent
+} from "../agent";
 import type {
   ConversationStorage,
   StoredConversationMessage
@@ -12,6 +17,7 @@ import {
 } from "./persisted-history";
 import type { ConversationRequest } from "./request";
 import type { ConversationResponse } from "./response";
+import type { ConversationStreamEvent } from "./stream";
 import { validateConversationRequest } from "./validation";
 
 export type ConversationTurnPersistence = Pick<
@@ -42,17 +48,49 @@ export class DefaultConversation implements Conversation {
   }
 
   async execute(request: ConversationRequest): Promise<ConversationResponse> {
+    for await (const event of this.run(request, false)) {
+      if (event.type !== "content") return event.response;
+    }
+    return failure(
+      request?.id ?? "",
+      "CONVERSATION_FAILED",
+      "Conversation failed"
+    );
+  }
+
+  executeStream(
+    request: ConversationRequest
+  ): AsyncIterable<ConversationStreamEvent> {
+    return this.run(request, true);
+  }
+
+  private async *run(
+    request: ConversationRequest,
+    stream: boolean
+  ): AsyncGenerator<ConversationStreamEvent> {
     try {
       const errors = validateConversationRequest(request);
       if (errors.length > 0) {
-        return failure(request?.id ?? "", errors[0].code, errors[0].message);
+        yield {
+          type: "failure",
+          response: failure(
+            request?.id ?? "",
+            errors[0].code,
+            errors[0].message
+          )
+        };
+        return;
       }
       if (request.context && request.context.conversationId !== this.id) {
-        return failure(
-          request.id,
-          "INVALID_CONVERSATION",
-          "Conversation ID does not match"
-        );
+        yield {
+          type: "failure",
+          response: failure(
+            request.id,
+            "INVALID_CONVERSATION",
+            "Conversation ID does not match"
+          )
+        };
+        return;
       }
 
       let storedRows: StoredConversationMessage[] = [];
@@ -60,18 +98,26 @@ export class DefaultConversation implements Conversation {
         try {
           storedRows = await this.options.persistence.getMessages(this.id);
         } catch {
-          return failure(
-            request.id,
-            "TURN_PERSISTENCE_FAILED",
-            "Conversation persistence failed"
-          );
+          yield {
+            type: "failure",
+            response: failure(
+              request.id,
+              "TURN_PERSISTENCE_FAILED",
+              "Conversation persistence failed"
+            )
+          };
+          return;
         }
         if (!toConversationHistory(storedRows, this.id)) {
-          return failure(
-            request.id,
-            "INVALID_PERSISTED_HISTORY",
-            "Stored conversation history is invalid"
-          );
+          yield {
+            type: "failure",
+            response: failure(
+              request.id,
+              "INVALID_PERSISTED_HISTORY",
+              "Stored conversation history is invalid"
+            )
+          };
+          return;
         }
         const existing = findCompletedTurn(
           storedRows,
@@ -80,25 +126,33 @@ export class DefaultConversation implements Conversation {
           request.prompt
         );
         if (existing.kind === "conflict") {
-          return failure(
-            request.id,
-            "TURN_INTEGRITY_FAILED",
-            "Stored conversation turn conflicts with this request"
-          );
+          yield {
+            type: "failure",
+            response: failure(
+              request.id,
+              "TURN_INTEGRITY_FAILED",
+              "Stored conversation turn conflicts with this request"
+            )
+          };
+          return;
         }
         if (existing.kind === "complete") {
           if (!this.rememberTurn(existing.user, existing.assistant)) {
-            return failure(
-              request.id,
-              "TURN_INTEGRITY_FAILED",
-              "Conversation history conflicts with stored turn"
-            );
+            yield {
+              type: "failure",
+              response: failure(
+                request.id,
+                "TURN_INTEGRITY_FAILED",
+                "Conversation history conflicts with stored turn"
+              )
+            };
+            return;
           }
-          return {
-            id: request.id,
-            content: existing.assistant.content,
-            status: "success"
+          yield {
+            type: "complete",
+            response: success(request.id, existing.assistant.content)
           };
+          return;
         }
         if (
           this.messages.some(
@@ -107,22 +161,22 @@ export class DefaultConversation implements Conversation {
               message.id === `${request.id}:assistant`
           )
         ) {
-          return failure(
-            request.id,
-            "TURN_INTEGRITY_FAILED",
-            "Conversation history conflicts with stored turn"
-          );
+          yield {
+            type: "failure",
+            response: failure(
+              request.id,
+              "TURN_INTEGRITY_FAILED",
+              "Conversation history conflicts with stored turn"
+            )
+          };
+          return;
         }
       }
 
       const history: AgentMessage[] = (
         request.context?.history?.messages ?? this.messages
-      ).map(({ role, content, timestamp }) => ({
-        role,
-        content,
-        timestamp
-      }));
-      const result = await this.agent.execute({
+      ).map(({ role, content, timestamp }) => ({ role, content, timestamp }));
+      const agentRequest = {
         id: request.id,
         prompt: request.prompt,
         context: {
@@ -130,13 +184,35 @@ export class DefaultConversation implements Conversation {
           metadata: request.context?.metadata,
           history
         }
-      });
+      };
+      let result: AgentResponse;
+      if (stream && typeof this.agent.executeStream === "function") {
+        let terminal: AgentResponse | undefined;
+        for await (const event of this.agent.executeStream(agentRequest)) {
+          if (!validAgentStreamEvent(event, request.id) || terminal) {
+            throw new Error("Invalid agent stream");
+          }
+          if (event.type === "content") {
+            yield { type: "content", delta: event.delta };
+          } else {
+            terminal = event.response;
+          }
+        }
+        if (!terminal) throw new Error("Agent stream ended without a result");
+        result = terminal;
+      } else {
+        result = await this.agent.execute(agentRequest);
+      }
       if (result.status === "failure") {
-        return failure(
-          request.id,
-          result.error?.code ?? "AGENT_FAILED",
-          result.error?.message ?? "Agent execution failed"
-        );
+        yield {
+          type: "failure",
+          response: failure(
+            request.id,
+            result.error?.code ?? "AGENT_FAILED",
+            result.error?.message ?? "Agent execution failed"
+          )
+        };
+        return;
       }
 
       const latestStored = storedRows.reduce(
@@ -192,46 +268,65 @@ export class DefaultConversation implements Conversation {
               timestamp
             );
           } catch {
-            return failure(
-              request.id,
-              "TURN_PERSISTENCE_FAILED",
-              "Conversation persistence failed"
-            );
+            yield {
+              type: "failure",
+              response: failure(
+                request.id,
+                "TURN_PERSISTENCE_FAILED",
+                "Conversation persistence failed"
+              )
+            };
+            return;
           }
           if (outcome.kind === "none") {
-            return failure(
-              request.id,
-              "TURN_PERSISTENCE_FAILED",
-              "Conversation persistence failed"
-            );
+            yield {
+              type: "failure",
+              response: failure(
+                request.id,
+                "TURN_PERSISTENCE_FAILED",
+                "Conversation persistence failed"
+              )
+            };
+            return;
           }
           if (outcome.kind === "conflict") {
-            return failure(
-              request.id,
-              "TURN_INTEGRITY_FAILED",
-              "Stored conversation turn conflicts with this request"
-            );
+            yield {
+              type: "failure",
+              response: failure(
+                request.id,
+                "TURN_INTEGRITY_FAILED",
+                "Stored conversation turn conflicts with this request"
+              )
+            };
+            return;
           }
         }
       }
       if (this.options.persistence) {
         if (!this.rememberTurn(user, assistant)) {
-          return failure(
-            request.id,
-            "TURN_INTEGRITY_FAILED",
-            "Conversation history conflicts with stored turn"
-          );
+          yield {
+            type: "failure",
+            response: failure(
+              request.id,
+              "TURN_INTEGRITY_FAILED",
+              "Conversation history conflicts with stored turn"
+            )
+          };
+          return;
         }
       } else {
         this.messages.push(user, assistant);
       }
-      return { id: request.id, content: result.content, status: "success" };
+      yield { type: "complete", response: success(request.id, result.content) };
     } catch {
-      return failure(
-        request?.id ?? "",
-        "CONVERSATION_FAILED",
-        "Conversation failed"
-      );
+      yield {
+        type: "failure",
+        response: failure(
+          request?.id ?? "",
+          "CONVERSATION_FAILED",
+          "Conversation failed"
+        )
+      };
     }
   }
 
@@ -260,10 +355,35 @@ export class DefaultConversation implements Conversation {
   }
 }
 
+function validAgentStreamEvent(
+  value: unknown,
+  requestId: string
+): value is AgentStreamEvent {
+  if (!value || typeof value !== "object") return false;
+  const event = value as Record<string, unknown>;
+  if (event.type === "content") return typeof event.delta === "string";
+  if (event.type !== "complete" && event.type !== "failure") return false;
+  const response = event.response;
+  if (!response || typeof response !== "object") return false;
+  const fields = response as Record<string, unknown>;
+  return (
+    fields.id === requestId &&
+    typeof fields.content === "string" &&
+    fields.status === (event.type === "complete" ? "success" : "failure")
+  );
+}
+
+function success(
+  id: string,
+  content: string
+): ConversationResponse & { status: "success" } {
+  return { id, content, status: "success" };
+}
+
 function failure(
   id: string,
   code: string,
   message: string
-): ConversationResponse {
+): ConversationResponse & { status: "failure" } {
   return { id, content: "", status: "failure", error: { code, message } };
 }
