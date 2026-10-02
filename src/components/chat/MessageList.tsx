@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { ConversationMessage } from "../../conversation";
-import type { ChatAttempt } from "./chat-state";
+import type { ChatAttempt, ChatState } from "./chat-state";
 
 const roleLabels = {
   user: "You",
@@ -12,13 +12,18 @@ const roleLabels = {
 interface MessageListProps {
   history: ConversationMessage[];
   pending: ChatAttempt | null;
+  streamedAssistant: ChatState["streamedAssistant"];
 }
 
-export function MessageList({ history, pending }: MessageListProps) {
+export function MessageList({
+  history,
+  pending,
+  streamedAssistant
+}: MessageListProps) {
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => {
     end.current?.scrollIntoView({ block: "nearest" });
-  }, [history, pending]);
+  }, [history, pending, streamedAssistant?.content]);
 
   return (
     <div
@@ -49,6 +54,14 @@ export function MessageList({ history, pending }: MessageListProps) {
               You <span>· Pending</span>
             </p>
             <p className="message-content">{pending.prompt}</p>
+          </li>
+        )}
+        {pending && streamedAssistant?.attemptId === pending.id && (
+          <li className="message message-assistant message-streaming">
+            <p className="message-role">
+              Agent <span>· Responding</span>
+            </p>
+            <p className="message-content">{streamedAssistant.content}</p>
           </li>
         )}
       </ol>

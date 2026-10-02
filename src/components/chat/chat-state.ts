@@ -9,6 +9,7 @@ export interface ChatState {
   draft: string;
   history: ConversationMessage[];
   pending: ChatAttempt | null;
+  streamedAssistant: { attemptId: string; content: string } | null;
   retryId: string | null;
   failed: boolean;
   failureCode: string | null;
@@ -17,6 +18,8 @@ export interface ChatState {
 type ChatAction =
   | { type: "edit"; draft: string }
   | { type: "start"; attempt: ChatAttempt }
+  | { type: "streamContent"; attemptId: string; delta: string }
+  | { type: "reset"; history: ConversationMessage[] }
   | { type: "success"; history: ConversationMessage[] }
   | { type: "failure"; code?: string };
 
@@ -25,6 +28,7 @@ export function initialChatState(history: ConversationMessage[]): ChatState {
     draft: "",
     history,
     pending: null,
+    streamedAssistant: null,
     retryId: null,
     failed: false,
     failureCode: null
@@ -55,15 +59,32 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
       return {
         ...state,
         pending: action.attempt,
+        streamedAssistant: null,
         failed: false,
         failureCode: null
       };
+    case "streamContent":
+      if (
+        !state.pending ||
+        state.pending.id !== action.attemptId ||
+        !action.delta
+      )
+        return state;
+      return {
+        ...state,
+        streamedAssistant: {
+          attemptId: action.attemptId,
+          content: (state.streamedAssistant?.content ?? "") + action.delta
+        }
+      };
+    case "reset":
     case "success":
       return initialChatState(action.history);
     case "failure":
       return {
         ...state,
         pending: null,
+        streamedAssistant: null,
         retryId: state.pending?.id ?? state.retryId,
         failed: true,
         failureCode: action.code ?? null

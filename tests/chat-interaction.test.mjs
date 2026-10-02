@@ -64,6 +64,66 @@ test("pending attempts are separate from completed history and block edits/submi
   assert.equal(chatReducer(pending, { type: "start", attempt }), pending);
 });
 
+test("streamed content stays transient, ordered, and tied to the active attempt", () => {
+  const history = [message("assistant", "Earlier response")];
+  const drafted = edit(initialChatState(history), "  Exact prompt  ");
+  assert.equal(drafted.streamedAssistant, null);
+  const attempt = prepareAttempt(drafted, () => "request");
+  let state = chatReducer(drafted, { type: "start", attempt });
+  assert.equal(state.pending.prompt, "  Exact prompt  ");
+  assert.equal(state.streamedAssistant, null);
+  assert.equal(
+    chatReducer(state, {
+      type: "streamContent",
+      attemptId: "other",
+      delta: "stale"
+    }),
+    state
+  );
+  assert.equal(
+    chatReducer(state, {
+      type: "streamContent",
+      attemptId: attempt.id,
+      delta: ""
+    }),
+    state
+  );
+  for (const delta of ["  Hel", "lo", ...Array(40).fill("!")]) {
+    state = chatReducer(state, {
+      type: "streamContent",
+      attemptId: attempt.id,
+      delta
+    });
+  }
+  assert.deepEqual(state.streamedAssistant, {
+    attemptId: attempt.id,
+    content: `  Hello${"!".repeat(40)}`
+  });
+  assert.equal(state.history, history);
+  assert.deepEqual(state.history, [message("assistant", "Earlier response")]);
+  const failed = chatReducer(state, { type: "failure", code: "FAILED" });
+  assert.equal(failed.streamedAssistant, null);
+  assert.equal(failed.pending, null);
+  assert.equal(failed.draft, "  Exact prompt  ");
+  assert.equal(failed.retryId, attempt.id);
+  assert.equal(failed.failureCode, "FAILED");
+  assert.equal(
+    chatReducer(failed, {
+      type: "streamContent",
+      attemptId: attempt.id,
+      delta: "late"
+    }),
+    failed
+  );
+  assert.deepEqual(
+    prepareAttempt(failed, () => "new"),
+    attempt
+  );
+  const retried = chatReducer(failed, { type: "start", attempt });
+  assert.equal(retried.streamedAssistant, null);
+  assert.equal(edit(failed, "Changed").retryId, null);
+});
+
 test("failed unchanged drafts reuse an ID; any edit invalidates it, including edit then undo", () => {
   const draft = edit(initialChatState([]), "Goal");
   const attempt = prepareAttempt(draft, () => "original");
@@ -94,12 +154,21 @@ test("success replaces the snapshot with authoritative history and clears transi
     message("user", "Goal"),
     message("assistant", "Saved result")
   ];
-  const completed = chatReducer(pending, { type: "success", history });
+  const streaming = chatReducer(pending, {
+    type: "streamContent",
+    attemptId: "old",
+    delta: "Provisional"
+  });
+  const completed = chatReducer(streaming, { type: "success", history });
   assert.deepEqual(completed, initialChatState(history));
   assert.equal(completed.history, history);
   assert.equal(
     prepareAttempt(edit(completed, "Next"), () => "next").id,
     "next"
+  );
+  assert.equal(
+    chatReducer(streaming, { type: "reset", history }).streamedAssistant,
+    null
   );
 });
 
@@ -148,5 +217,36 @@ test("pending prompt has an explicit transient label and does not duplicate hist
   );
   assert.match(html, /Pending/);
   assert.equal((html.match(/New request/g) ?? []).length, 1);
+  assert.equal(history.length, 1);
+});
+
+test("one streamed assistant follows the pending user and escapes HTML-like content", () => {
+  const history = [message("assistant", "Saved")];
+  const pending = { id: "pending", prompt: "New request" };
+  const first = renderToStaticMarkup(
+    createElement(MessageList, {
+      history,
+      pending,
+      streamedAssistant: null
+    })
+  );
+  assert.doesNotMatch(first, /Responding/);
+  const html = renderToStaticMarkup(
+    createElement(MessageList, {
+      history,
+      pending,
+      streamedAssistant: {
+        attemptId: pending.id,
+        content: '<script>alert("unsafe")</script>'
+      }
+    })
+  );
+  assert.equal((html.match(/message-streaming/g) ?? []).length, 1);
+  assert.ok(html.indexOf("New request") < html.indexOf("Responding"));
+  assert.match(
+    html,
+    /&lt;script&gt;alert\(&quot;unsafe&quot;\)&lt;\/script&gt;/
+  );
+  assert.doesNotMatch(html, /<script>/);
   assert.equal(history.length, 1);
 });
