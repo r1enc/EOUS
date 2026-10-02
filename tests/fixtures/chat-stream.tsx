@@ -222,13 +222,15 @@ async function run() {
     !provisional() && scrolls === priorScrolls,
     "Empty delta has no visible effect"
   );
-  await emit(first.output, content("Hel"));
+  await emit(first.output, content("**Hel"));
   check(
-    provisional()?.textContent?.includes("Hel") && messages().length === 2,
-    "First delta visible before terminal"
+    provisional()?.textContent?.includes("**Hel") &&
+      !provisional()?.querySelector("strong") &&
+      messages().length === 2,
+    "Incomplete Markdown is visible before terminal"
   );
   await act(async () => {
-    first.output.push({ kind: "event", value: content("lo ") });
+    first.output.push({ kind: "event", value: content("lo** ") });
     first.output.push({
       kind: "event",
       value: content('<script>alert("unsafe")</script>')
@@ -239,9 +241,8 @@ async function run() {
     "Rapid deltas retain one assistant bubble"
   );
   check(
-    provisional()?.querySelector(".message-content")?.textContent ===
-      'Hello <script>alert("unsafe")</script>',
-    "Deltas append in order without trimming"
+    provisional()?.querySelector("strong")?.textContent === "Hello",
+    "Later delta completes Markdown in the same assistant bubble"
   );
   check(
     !provisional()?.querySelector("script") && scrolls > priorScrolls,
@@ -262,7 +263,7 @@ async function run() {
     "Navigation remains locked through deltas"
   );
   const beforeHistory = historyReads;
-  save(first.request, "Authoritative saved answer");
+  save(first.request, "**Authoritative saved answer**");
   await emit(
     first.output,
     complete(first.request.id, "Different terminal text")
@@ -278,13 +279,13 @@ async function run() {
     "One final user and assistant replace provisional pair"
   );
   check(
-    messages()[1].querySelector(".message-content")?.textContent ===
+    messages()[1].querySelector("strong")?.textContent ===
       "Authoritative saved answer",
-    "Final UI matches authoritative history"
+    "Final UI formats authoritative history"
   );
   check(
     !text().includes("Different terminal text") &&
-      !text().includes("Hello <script>"),
+      !text().includes("Hello alert"),
     "Neither terminal nor provisional text is retained"
   );
   check(
@@ -310,8 +311,12 @@ async function run() {
     retry.request.id === before.request.id,
     "Unchanged retry keeps request ID"
   );
-  await emit(retry.output, content("Partial answer"));
-  check(Boolean(provisional()), "Retry can show provisional output");
+  await emit(retry.output, content("```ts\nconst x ="));
+  check(
+    Boolean(provisional()?.querySelector("pre code")) &&
+      provisional()?.textContent?.includes("const x ="),
+    "Incomplete code fence renders during retry"
+  );
   await emit(retry.output, failure(retry.request.id));
   check(
     !provisional() &&

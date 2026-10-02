@@ -189,7 +189,7 @@ test("an empty injected Workspace renders a usable labeled composer without exec
   assert.match(html, /type="submit" disabled/);
 });
 
-test("existing roles and untrusted multiline text render through escaped React content", () => {
+test("non-assistant roles stay escaped while assistant HTML is inactive", () => {
   const content = '<script>alert("unsafe")</script>\nsecond line';
   const history = ["user", "assistant", "system", "tool"].map((role) =>
     message(role, content)
@@ -199,7 +199,11 @@ test("existing roles and untrusted multiline text render through escaped React c
   );
   for (const label of ["You", "Agent", "System", "Tool"])
     assert.ok(html.includes(label));
-  assert.equal((html.match(/class="message-content"/g) ?? []).length, 4);
+  assert.equal((html.match(/class="message-content"/g) ?? []).length, 3);
+  assert.equal(
+    (html.match(/class="message-content assistant-markdown"/g) ?? []).length,
+    1
+  );
   assert.match(
     html,
     /&lt;script&gt;alert\(&quot;unsafe&quot;\)&lt;\/script&gt;\nsecond line/
@@ -220,7 +224,7 @@ test("pending prompt has an explicit transient label and does not duplicate hist
   assert.equal(history.length, 1);
 });
 
-test("one streamed assistant follows the pending user and escapes HTML-like content", () => {
+test("one streamed assistant follows the pending user and skips raw HTML", () => {
   const history = [message("assistant", "Saved")];
   const pending = { id: "pending", prompt: "New request" };
   const first = renderToStaticMarkup(
@@ -243,10 +247,6 @@ test("one streamed assistant follows the pending user and escapes HTML-like cont
   );
   assert.equal((html.match(/message-streaming/g) ?? []).length, 1);
   assert.ok(html.indexOf("New request") < html.indexOf("Responding"));
-  assert.match(
-    html,
-    /&lt;script&gt;alert\(&quot;unsafe&quot;\)&lt;\/script&gt;/
-  );
   assert.doesNotMatch(html, /<script>/);
   assert.equal(history.length, 1);
 });

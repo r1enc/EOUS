@@ -170,8 +170,9 @@ async function run() {
     !document.querySelector(".message-content script") &&
       document
         .querySelector(".message-assistant")
-        ?.textContent?.includes("<script>plain text</script>"),
-    "Safe plain text in browser"
+        ?.textContent?.includes("A saved response.") &&
+      !document.querySelector(".message-assistant script"),
+    "Saved assistant Markdown skips raw HTML in browser"
   );
   check(
     getComputedStyle(document.querySelector(".message-content")!).whiteSpace ===

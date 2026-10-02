@@ -228,6 +228,83 @@ h1 {
   line-height: 1.65;
 }
 
+.assistant-markdown {
+  min-width: 0;
+  white-space: normal;
+}
+
+.assistant-markdown > :first-child {
+  margin-top: 0;
+}
+
+.assistant-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.assistant-markdown p,
+.assistant-markdown ul,
+.assistant-markdown ol,
+.assistant-markdown blockquote,
+.assistant-markdown pre {
+  margin: 0 0 0.75em;
+}
+
+.assistant-markdown h1,
+.assistant-markdown h2,
+.assistant-markdown h3,
+.assistant-markdown h4,
+.assistant-markdown h5,
+.assistant-markdown h6 {
+  margin: 1em 0 0.35em;
+  color: var(--heading);
+  font-size: 1.1em;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.assistant-markdown ul,
+.assistant-markdown ol {
+  padding-left: 1.5em;
+}
+
+.assistant-markdown blockquote {
+  padding-left: 0.9em;
+  border-left: 3px solid var(--border);
+  color: var(--muted-foreground);
+}
+
+.assistant-markdown code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.assistant-markdown :not(pre) > code {
+  padding: 0.1em 0.25em;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+}
+
+.assistant-markdown pre {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0.75em;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+.assistant-markdown a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.assistant-markdown a:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
 .composer-panel {
   padding: 16px 32px 24px;
   border-top: 1px solid var(--border);

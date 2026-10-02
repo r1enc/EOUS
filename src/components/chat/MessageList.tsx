@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { ConversationMessage } from "../../conversation";
 import type { ChatAttempt, ChatState } from "./chat-state";
+import { AssistantMarkdown } from "./AssistantMarkdown";
 
 const roleLabels = {
   user: "You",
@@ -45,7 +46,11 @@ export function MessageList({
         {history.map((message) => (
           <li key={message.id} className={`message message-${message.role}`}>
             <p className="message-role">{roleLabels[message.role]}</p>
-            <p className="message-content">{message.content}</p>
+            {message.role === "assistant" ? (
+              <AssistantMarkdown content={message.content} />
+            ) : (
+              <p className="message-content">{message.content}</p>
+            )}
           </li>
         ))}
         {pending && (
@@ -61,7 +66,7 @@ export function MessageList({
             <p className="message-role">
               Agent <span>· Responding</span>
             </p>
-            <p className="message-content">{streamedAssistant.content}</p>
+            <AssistantMarkdown content={streamedAssistant.content} />
           </li>
         )}
       </ol>
