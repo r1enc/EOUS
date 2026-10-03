@@ -82,6 +82,23 @@ test("streaming callers can close after consuming the raw response", async () =>
   assert.equal(signal.aborted, false);
 });
 
+test("shared chunk reader classifies a stalled body timeout and supports cleanup", async () => {
+  let aborted = false;
+  const exchange = await sendProviderRequest({ ...request, timeoutMs: 5 }, async (_url, init) => {
+    init.signal.addEventListener("abort", () => { aborted = true; });
+    return new Response(new ReadableStream({ start() {} }));
+  });
+  assert.equal(exchange.success, true);
+  const reader = exchange.response.body.getReader();
+  const chunk = await exchange.readChunk(reader);
+  assert.equal(chunk.success, false);
+  assert.equal(chunk.error.category, "timeout");
+  assert.equal(aborted, true);
+  await reader.cancel();
+  reader.releaseLock();
+  exchange.close();
+});
+
 test("malformed response object and unreadable JSON have safe validation errors", async () => {
   const malformed = await sendProviderRequest(request, async () => ({ status: 200, body: "body-secret" }));
   assert.equal(malformed.success, false);

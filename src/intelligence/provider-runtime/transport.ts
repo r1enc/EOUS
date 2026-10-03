@@ -12,6 +12,10 @@ export interface ProviderHttpRequest {
 export type ProviderJsonResult =
   { success: true; value: unknown } | { success: false; error: ProviderError };
 
+export type ProviderChunkResult =
+  | { success: true; value: ReadableStreamReadResult<Uint8Array> }
+  | { success: false; error: ProviderError };
+
 // Streaming callers consume response.body directly and must call close() in finally.
 export type ProviderHttpResult =
   | { success: false; error: ProviderError }
@@ -20,6 +24,9 @@ export type ProviderHttpResult =
       status: number;
       response: Response;
       readJson(): Promise<ProviderJsonResult>;
+      readChunk(
+        reader: ReadableStreamDefaultReader<Uint8Array>
+      ): Promise<ProviderChunkResult>;
       close(): void;
     };
 
@@ -142,6 +149,17 @@ export async function sendProviderRequest(
           };
         } finally {
           close();
+        }
+      },
+      async readChunk(reader): Promise<ProviderChunkResult> {
+        try {
+          const value = await Promise.race([reader.read(), aborted]);
+          return { success: true, value };
+        } catch {
+          return {
+            success: false,
+            error: timedOut ? errors.timeout : errors.network
+          };
         }
       }
     };
