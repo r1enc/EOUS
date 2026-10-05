@@ -10,3 +10,8 @@ export type { PermissionApprovalHandler } from "../permission";
 export type { ConversationNavigation } from "./conversation-navigation";
 export { createConversationNavigation } from "./createConversationNavigation";
 export type { ConversationNavigationConfig } from "./createConversationNavigation";
+export { resolvePreferredWorkspaceProvider } from "./resolvePreferredWorkspaceProvider";
+export type {
+  PreferredWorkspaceProvider,
+  PreferredWorkspaceProviderResult
+} from "./resolvePreferredWorkspaceProvider";
