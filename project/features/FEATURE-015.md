@@ -46,7 +46,7 @@ Credentials must never appear in source code, logs, or user-facing errors. TASK-
 | --- | --- | --- |
 | TASK-060 | Establish Provider Configuration Storage | Completed |
 | TASK-061 | Implement Provider Credential and Preference Persistence | Completed |
-| TASK-062 | Build Provider Settings Interface | Planned |
+| TASK-062 | Build Provider Settings Interface | Completed |
 | TASK-063 | Wire Preferred Provider Selection into Workspace Runtime | Planned |
 
 ---
