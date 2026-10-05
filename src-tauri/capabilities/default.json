@@ -3,5 +3,11 @@
   "identifier": "default",
   "description": "Default permissions for the EOUS desktop window.",
   "windows": ["main"],
-  "permissions": ["core:default", "sql:default"]
+  "permissions": [
+    "core:default",
+    "sql:default",
+    "allow-get-provider-credential",
+    "allow-set-provider-credential",
+    "allow-remove-provider-credential"
+  ]
 }
