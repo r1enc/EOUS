@@ -12,7 +12,7 @@ import {
 } from "../permission";
 import type { ProviderRegistry } from "../intelligence/provider-sdk";
 import { DefaultToolSdkRuntime } from "../execution/tool-sdk";
-import { createBuiltInTools } from "../tools/builtin";
+import { createBuiltInTools, type WebSearchBackend } from "../tools/builtin";
 import type { PermissionInteraction } from "./permission-interaction";
 
 export interface WorkspaceConfig {
@@ -25,6 +25,7 @@ export interface WorkspaceConfig {
   approvePermission?: PermissionApprovalHandler;
   initialHistory?: ConversationMessage[];
   conversationPersistence?: ConversationTurnPersistence;
+  webSearchBackend?: WebSearchBackend;
 }
 
 export interface Workspace extends Conversation {
@@ -43,7 +44,8 @@ export function createWorkspace(config: WorkspaceConfig): Workspace {
   const tools = new DefaultToolSdkRuntime((request, required, approval) =>
     permissions.consumeApproval(request, required, approval)
   );
-  for (const tool of createBuiltInTools()) tools.register(tool);
+  for (const tool of createBuiltInTools({ webSearch: config.webSearchBackend }))
+    tools.register(tool);
 
   const agent = new DefaultAgent(
     "eous-agent",

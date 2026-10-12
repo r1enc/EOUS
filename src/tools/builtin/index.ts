@@ -2,7 +2,7 @@ import type { BuiltInTool } from "./builtin-tool";
 import { CalculatorTool } from "./calculator/calculator";
 import { TxtReaderTool } from "./text-reader/text-reader";
 import { PdfReaderTool } from "./pdf-reader/pdf-reader";
-import { WebSearchTool } from "./web-search/web-search";
+import { WebSearchTool, type WebSearchBackend } from "./web-search/web-search";
 
 export type { BuiltInToolCategory } from "./category";
 export type { BuiltInToolMetadata } from "./metadata";
@@ -25,17 +25,20 @@ export type { PdfReaderInput, PdfReaderOutput } from "./pdf-reader/pdf-reader";
 
 export { WebSearchTool } from "./web-search/web-search";
 export type {
+  WebSearchBackend,
   WebSearchInput,
   WebSearchOutput,
   WebSearchResultItem
 } from "./web-search/web-search";
 
-export function createBuiltInTools(): BuiltInTool[] {
+export function createBuiltInTools(
+  options: { webSearch?: WebSearchBackend } = {}
+): BuiltInTool[] {
   return [
     new CalculatorTool(),
     new TxtReaderTool(),
     new PdfReaderTool(),
-    new WebSearchTool()
+    new WebSearchTool(options.webSearch)
   ];
 }
 

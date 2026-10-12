@@ -1,4 +1,5 @@
 mod provider_credentials;
+mod web_search;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -7,7 +8,11 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             provider_credentials::get_provider_credential,
             provider_credentials::set_provider_credential,
-            provider_credentials::remove_provider_credential
+            provider_credentials::remove_provider_credential,
+            web_search::set_web_search_credential,
+            web_search::remove_web_search_credential,
+            web_search::get_web_search_credential_status,
+            web_search::search_web
         ])
         .run(tauri::generate_context!())
         .expect("error while running EOUS");

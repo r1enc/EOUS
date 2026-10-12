@@ -2,7 +2,7 @@
 
 Version: 1.0
 
-Status: Planned
+Status: Completed
 
 Owner: EOUS
 
@@ -74,3 +74,15 @@ M
 # Definition of Done
 
 The acceptance criteria are verified; focused tests and applicable build or lint checks pass; architectural boundaries remain intact; and this Task is independently reviewable as one logical commit.
+
+---
+
+# Implementation and Release Note (2026-10-12)
+
+Tavily Search API is the sole Version 1 backend. Each user supplies a Tavily key (BYOK), stored under a separate fixed Windows Credential Manager target with Local persistence. Only status, set, and remove credential commands are exposed; search retrieves the key inside Rust. The native command sends one HTTPS POST to Tavily's fixed endpoint with Bearer authentication, `search_depth: basic`, at most five results, and answer, raw content, images, and automatic parameters disabled. It has finite timeouts, no redirects, and a bounded response. The Tool SDK still requires `network` approval before invoking the injected backend; denied requests make zero backend calls. Results retain the existing title/URL/snippet contract and reject unsafe URLs. The simulated production results are removed.
+
+Backend choice was reviewed against the [Tavily Search API](https://docs.tavily.com/documentation/api-reference/endpoint/search), [rate limits](https://docs.tavily.com/documentation/rate-limits), [pricing](https://www.tavily.com/pricing), and [Platform Terms](https://www.tavily.com/terms) on 2026-10-12. The published free tier was 1,000 API credits per month, and the documented basic search cost was one credit per request; pricing and limits can change. Tavily documents Customer Application integration, but its internal-business-use wording leaves public personal-use BYOK distribution uncertain. Whether persisted assistant answers incorporating search results are permitted also needs clarification. Brave and Bing were considered during planning and rejected for this V1 implementation because their terms, availability, and pricing did not give a clearer fit for the approved desktop BYOK flow. Search queries are sent to Tavily; users should avoid private data in queries. The application does not store the API key in SQLite, localStorage, or source. Main-window Tauri IPC remains a trusted application boundary and is not itself the Tool SDK permission gate.
+
+**Public-release gate:** Before publicly distributing EOUS with Tavily enabled, confirm that Tavily's terms cover the intended personal-use BYOK desktop integration and persisted-answer behavior, preferably in writing. TASK-067 must report this gate as unresolved until verified; Version 1 is not public-release ready while it remains open. No legal clearance is asserted.
+
+TASK-065 owns detailed network/auth/rate-limit/offline failure handling and Agent recovery. TASK-066 owns normal startup injection and settings navigation. No real Tavily key was available for a live request; deterministic mocked tests and native request-construction tests verify this task's behavior.

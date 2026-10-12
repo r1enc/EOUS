@@ -8,6 +8,10 @@
     "sql:default",
     "allow-get-provider-credential",
     "allow-set-provider-credential",
-    "allow-remove-provider-credential"
+    "allow-remove-provider-credential",
+    "allow-set-web-search-credential",
+    "allow-remove-web-search-credential",
+    "allow-get-web-search-credential-status",
+    "allow-search-web"
   ]
 }
